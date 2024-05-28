@@ -1,2 +1,2 @@
-# PremoveChess
+# Premove Chess
  Predict the future!
