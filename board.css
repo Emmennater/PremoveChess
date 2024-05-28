@@ -1,0 +1,71 @@
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    /* width: calc(min(60vw, 60vh));
+    height: calc(min(60vw, 60vh)); */
+    background-color: #333;
+}
+
+.square {
+    --square-color: #ffffff;
+    width: 75px;
+    height: 75px;
+    background-color: var(--square-color);
+}
+
+.even-square {
+    --square-color: var(--even-color);
+}
+
+.odd-square {
+    --square-color: var(--odd-color);
+}
+
+.square.selected {
+    background:
+        linear-gradient(#3ab76260, #3ab76260),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.possible-move {
+    background:
+        radial-gradient(#00000030 22%, transparent calc(22% + 0.1px)),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.possible-capture {
+    background:
+        radial-gradient(transparent calc(75% - 0.1px), #00000030 75%),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.attacked {
+    background:
+        linear-gradient(#ff000030, #ff000030),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.check {
+    background:
+        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.piece {
+    width: 75px;
+    height: 75px;
+    background-size: cover;
+    background-position: center;
+    cursor: grab;
+}
+
+#picked-up-piece {
+    position: absolute;
+    margin: -37.5px -37.5px;
+    width: 75px;
+    height: 75px;
+    background-size: cover;
+    background-position: center;
+    pointer-events: none;
+}

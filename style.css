@@ -1,0 +1,50 @@
+:root {
+    /* Chess Board */
+    /* --board-size: calc(min(80vw, 80vh)); */
+    /* --board-size: calc(max(80vw, 80vh)); */
+    --board-size: 50vw;
+    --odd-color: #EEEED2;
+    /* #404040; */
+    --even-color: #769656;
+    /* #555555; */
+    --even-color-2: #5c97a1;
+    /* #965656 #b97c52 */
+
+    --toolbar-height: 40px;
+}
+
+body, html {
+    margin: 0px;
+    padding: 0px;
+    background: linear-gradient(#415230, #1c221e);
+    /* background: linear-gradient(#111, #222); */
+    overflow: hidden;
+}
+
+body {
+    height: 100vh;
+}
+
+div {
+    -webkit-user-drag: none;
+}
+
+hbox {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    /* background-color: red; */
+}
+
+vbox {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    /* background-color: blue; */
+}
