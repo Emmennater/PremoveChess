@@ -69,7 +69,7 @@ function squareReleased(element, col, row) {
     if (dropPiece(col, row)) {
         // Piece moved
         deselectSquare(); 
-    } else if (wasSelected || (col !== startCol || row !== startRow)) {
+    } else if (wasSelected || col !== startCol || row !== startRow) {
         deselectSquare();
     }
 }
@@ -83,7 +83,7 @@ function pickUpPiece(col, row) {
         return;
     }
     
-    wasSelected = selectedTile.selected && col === selectedTile.col && row === selectedTile.col;
+    wasSelected = selectedTile.selected && col === selectedTile.col && row === selectedTile.row;
 
     selectSquare(col, row);
     setPieceIcon(col, row, "");
