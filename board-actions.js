@@ -306,6 +306,19 @@ function BoardActions(game) {
         }
     }
 
+    function highlightChecks() {
+        // Remove all current checks
+        const checkTiles = document.getElementsByClassName("check");
+        Array.from(checkTiles).forEach(e => e.classList.remove("check"));
+
+        // Check
+        if (activeGame.inCheck()) {
+            const kings = activeGame.getKings();
+            const kingPos = activeGame.isWhitesTurn() ? kings.w : kings.b;
+            setSquareState(kingPos[0], kingPos[1], "check", true);
+        }
+    }
+
     function moveUpdateGUI(move, animate, callback) {
         const toCol = move.move[2];
         const toRow = move.move[3];
@@ -332,16 +345,6 @@ function BoardActions(game) {
                 removePiece(toCol, toRow - moveDir);
             }
 
-            // Remove all current checks
-            const checkTiles = document.getElementsByClassName("check");
-            Array.from(checkTiles).forEach(e => e.classList.remove("check"));
-
-            // Check
-            if (move.san.includes("+")) {
-                const kingPos = whiteMoved ? kings.b : kings.w;
-                setSquareState(kingPos[0], kingPos[1], "check", true);
-            }
-
             // Promotion
             if (move.promotion) {
                 requestPromotion(toCol, toRow, whiteMoved, promotionPiece => {
@@ -363,6 +366,7 @@ function BoardActions(game) {
         moveUpdateGUI(move, animate, promotionPiece => {
             activeGame.makeMove(fromCol, fromRow, toCol, toRow, promotionPiece);
             activeGame.getLegalMoves();
+            highlightChecks();
         });
     }
 
