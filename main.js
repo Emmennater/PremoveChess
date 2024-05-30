@@ -1,19 +1,17 @@
 
 (function main() {
-    
     setGridElementSize(8, 8);
     
-    game = makeGame(8, 8);
-    loadFen(game, defaultFen);
-    
-    updatePieces(game);
-    setBoardEvents(game);
-    initEvents();
+    game = new ChessGame();
+    game.loadFen(defaultFen);
+    game.getLegalMoves();
+    events = new BoardActions(game);
 
+    updatePieces(game);
     requestAnimationFrame(loop);
 })();
 
 function loop() {
-    updateBoardActions();
+    events.updateBoardActions();
     requestAnimationFrame(loop);
 }

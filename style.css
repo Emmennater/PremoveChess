@@ -16,7 +16,8 @@
 body, html {
     margin: 0px;
     padding: 0px;
-    background: linear-gradient(#415230, #1c221e);
+    background-color: rgb(39, 42, 46);
+    /* background: linear-gradient(#415230, #1c221e); */
     /* background: linear-gradient(#111, #222); */
     overflow: hidden;
 }
@@ -47,4 +48,8 @@ vbox {
     justify-content: center;
     width: 100%;
     /* background-color: blue; */
+}
+
+.dim {
+    filter: brightness(0.3);
 }

@@ -62,16 +62,6 @@ function setPieceIconImage(col, row, img) {
     }
 }
 
-function setSelectedSquare(col, row, selected) {
-    const squareElem = getSquareElemAt(col, row);
-    
-    if (selected) {
-        squareElem.classList.add("selected");
-    } else {
-        squareElem.classList.remove("selected");
-    }
-}
-
 function getPieceIconImage(col, row) {
     const squareElem = getSquareElemAt(col, row);
     const pieceElem = squareElem.children[0];
@@ -93,8 +83,19 @@ function updatePieces(game) {
     const board = document.getElementById("board");
     for (let c = 0; c < gridCols; c++) {
         for (let r = 0; r < gridRows; r++) {
-            const type = getPieceAt(game, c, r);
+            // const type = getPieceAt(game, c, r);
+            const type = game.getPieceAt(c, r);
             setPieceIcon(c, r, type);
         }
+    }
+}
+
+function setSquareState(col, row, state, on) {
+    const squareElem = getSquareElemAt(col, row);
+    
+    if (on) {
+        squareElem.classList.add(state);
+    } else {
+        squareElem.classList.remove(state);
     }
 }

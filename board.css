@@ -1,10 +1,12 @@
 
 .board {
     display: grid;
+    contain: layout;
     grid-template-columns: repeat(8, 1fr);
     /* width: calc(min(60vw, 60vh));
     height: calc(min(60vw, 60vh)); */
     background-color: #333;
+    transition: filter 0.2s;
 }
 
 .square {
@@ -14,11 +16,11 @@
     background-color: var(--square-color);
 }
 
-.even-square {
+.square.even-square {
     --square-color: var(--even-color);
 }
 
-.odd-square {
+.square.odd-square {
     --square-color: var(--odd-color);
 }
 
@@ -58,6 +60,7 @@
     background-size: cover;
     background-position: center;
     cursor: grab;
+    z-index: 1;
 }
 
 #picked-up-piece {
@@ -68,4 +71,72 @@
     background-size: cover;
     background-position: center;
     pointer-events: none;
+}
+
+@property --x {
+    syntax: '<number>';
+    inherits: false;
+    initial-value: 0.0;
+}
+
+.promotion-wrapper {
+    display: none;
+    position: absolute;
+    background: radial-gradient(
+        rgb(
+            calc(220 * (1.0 - var(--x)) + 220 * var(--x)),
+            calc(220 * (1.0 - var(--x)) + 180 * var(--x)),
+            calc(220 * (1.0 - var(--x)) + 170 * var(--x))
+        ),
+        rgb(
+            calc(120 * (1.0 - var(--x)) + 207 * var(--x)),
+            calc(120 * (1.0 - var(--x)) + 89 * var(--x)),
+            calc(120 * (1.0 - var(--x)) + 25 * var(--x))
+        ) calc(var(--x) * 31% + 69%),
+        transparent calc(var(--x) * 31% + 69% + 1px)
+    );
+    cursor: pointer;
+    animation: colorChangeOut 0.15s ease forwards; /* Animation for when not hovered */
+
+    user-select: none;
+}
+
+.promotion-wrapper:hover {
+    animation: colorChangeIn 0.15s ease forwards; /* Animation for when hovered */
+}
+
+@keyframes colorChangeIn {
+    from {
+        --x: 0.0;
+    }
+    to {
+        --x: 1.0;
+    }
+}
+
+@keyframes colorChangeOut {
+    from {
+        --x: 1.0;
+    }
+    to {
+        --x: 0.0;
+    }
+}
+
+.promotion {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+
+    transform: scale(0.8);
+    transition: transform 0.15s;
+
+    user-select: none;
+    pointer-events: none;
+}
+
+.promotion-wrapper:hover .promotion {
+    transform: scale(1.0);
 }

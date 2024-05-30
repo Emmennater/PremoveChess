@@ -6,8 +6,36 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="board.css">
     <title>Premove Chess</title>
+
+    <!-- Chess API -->
+    <script src="bundle.js"></script>
+    <!-- https://stackoverflow.com/questions/49562978/how-to-use-npm-modules-in-browser-is-possible-to-use-them-even-in-local-pc -->
+
 </head>
 <body>
+
+    <!-- Promotion GUI -->
+    <div class="promotion-wrapper">
+        <div class="promotion">
+
+        </div>
+    </div>
+    <div class="promotion-wrapper">
+        <div class="promotion">
+            
+        </div>
+    </div>
+    <div class="promotion-wrapper">
+        <div class="promotion">
+            
+        </div>
+    </div>
+    <div class="promotion-wrapper">
+        <div class="promotion">
+            
+        </div>
+    </div>
+
     <hbox>
         <vbox>
             <!-- Board -->
@@ -18,9 +46,10 @@
     <!-- Picked up piece -->
     <div id="picked-up-piece"></div>
 
+    <script src="helper.js"></script>
     <script src="board-element.js"></script>
     <script src="board-actions.js"></script>
-    <script src="board-game.js"></script>
+    <script src="board-chess.js"></script>
     <script src="main.js"></script>
 
 </body>
