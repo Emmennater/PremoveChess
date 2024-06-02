@@ -31,3 +31,16 @@ function getCoordinates(fromCol, fromRow, toCol, toRow) {
         String.fromCharCode(codea + toCol) +
         String.fromCharCode(code0 + rows - toRow - 1);
 }
+
+function getPieceSrcUrl(letter) {
+    let side = letter.toUpperCase() == letter ? "w" : "b";
+    return `https://images.chesscomfiles.com/chess-themes/pieces/icy_sea/150/${side + letter.toLowerCase()}.png`;
+}
+
+function setMainCursor(cursor) {
+    document.body.style.cursor = cursor;
+}
+
+function reflow(elt) {
+    elt.offsetHeight; // Reading offsetHeight triggers a reflow
+}

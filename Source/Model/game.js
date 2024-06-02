@@ -31,8 +31,30 @@ class ChessGame {
         return piece;
     }
 
+    isWhitePiece(piece) {
+        return piece.toUpperCase() === piece;
+    }
+
+    isValidSquare(col, row) {
+        return col >= 0 && row >= 0 && col < this.cols && row < this.rows;
+    }
+
     isWhitesTurn() {
         return this.chess.turn() === "w";
+    }
+
+    skipTurn() {
+        let fen = this.chess.fen();
+        let parts = fen.split(' ');
+
+        // parts[1] is the turn indicator ('w' for white, 'b' for black)
+        parts[1] = (parts[1] === 'w') ? 'b' : 'w';
+
+        // Join the parts back together into a new FEN string
+        let newFen = parts.join(' ');
+
+        // Load the new FEN string into the game
+        this.chess.load(newFen);
     }
 
     inCheck() {
@@ -57,8 +79,8 @@ class ChessGame {
         throw Error("Undefined endgame state");
     }
 
-    getLegalMoves() {
-        let moves = this.chess.moves({ verbose: true });
+    getLegalMoves(pseudoLegal = false) {
+        let moves = this.chess.moves({ verbose: true, legal: !pseudoLegal });
         this.moves.length = moves.length;
 
         for (let i = 0; i < moves.length; i++) {
@@ -98,14 +120,7 @@ class ChessGame {
     }
 
     isLegalMove(fromCol, fromRow, toCol, toRow) {
-        for (let move of this.moves) {
-            if (fromCol == move.move[0] && fromRow == move.move[1] &&
-                toCol == move.move[2] && toRow == move.move[3]) {
-                return true;
-            }
-        }
-
-        return false;
+        return this.findMove(fromCol, fromRow, toCol, toRow) !== null;
     }
 
     makeMove(fromCol, fromRow, toCol, toRow, promotionPiece = null) {

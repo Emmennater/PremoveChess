@@ -2,7 +2,7 @@
 .board {
     display: grid;
     contain: layout;
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
     /* width: calc(min(60vw, 60vh));
     height: calc(min(60vw, 60vh)); */
     background-color: #333;
@@ -42,15 +42,57 @@
         linear-gradient(var(--square-color), var(--square-color));
 }
 
+.square.premove-move {
+    background:
+        /* radial-gradient(#00000030 22%, transparent calc(22% + 0.1px)), */
+        radial-gradient(#12255050 22%, transparent calc(22% + 0.1px)),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.premove-capture {
+    background:
+        /* radial-gradient(transparent calc(75% - 0.1px), #00000030 75%), */
+        radial-gradient(transparent calc(75% - 0.1px), #12255050 75%),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
 .square.attacked {
     background:
         linear-gradient(#ff000030, #ff000030),
         linear-gradient(var(--square-color), var(--square-color));
 }
 
+.square.premove {
+    background:
+        /* linear-gradient(#d81d1d60, #d81d1d60), */
+        linear-gradient(#15317450, #15317450),
+        /* linear-gradient(#00000050, #00000050), */
+        linear-gradient(var(--square-color), var(--square-color));
+    }
+    
 .square.check {
     background:
         radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+    
+.square.check.premove {
+    background:
+        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
+        linear-gradient(#15317450, #15317450),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.illegal-piece {
+    background:
+        linear-gradient(#ff000050, #ff000050),
+        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
+        linear-gradient(var(--square-color), var(--square-color));
+}
+
+.square.illegal-move {
+    background:
+        linear-gradient(#ff000050, #ff000050),
         linear-gradient(var(--square-color), var(--square-color));
 }
 
@@ -98,6 +140,7 @@
     cursor: pointer;
     animation: colorChangeOut 0.15s ease forwards; /* Animation for when not hovered */
 
+    z-index: 2;
     user-select: none;
 }
 

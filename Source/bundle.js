@@ -857,8 +857,8 @@ class Chess {
     isGameOver() {
         return this.isCheckmate() || this.isStalemate() || this.isDraw();
     }
-    moves({ verbose = false, square = undefined, piece = undefined, } = {}) {
-        const moves = this._moves({ square, piece });
+    moves({ verbose = false, square = undefined, piece = undefined, legal = true } = {}) {
+        const moves = this._moves({ square, piece, legal });
         if (verbose) {
             return moves.map((move) => this._makePretty(move));
         }

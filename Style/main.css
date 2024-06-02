@@ -4,9 +4,9 @@
     /* --board-size: calc(max(80vw, 80vh)); */
     --board-size: 50vw;
     --odd-color: #EEEED2;
-    /* #404040; */
+    /* --odd-color: #A8A8A8; */
     --even-color: #769656;
-    /* #555555; */
+    /* --even-color: #7f7f7f; */
     --even-color-2: #5c97a1;
     /* #965656 #b97c52 */
 
