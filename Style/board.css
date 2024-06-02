@@ -26,7 +26,8 @@
 
 .square.selected {
     background:
-        linear-gradient(#3ab76260, #3ab76260),
+        /* linear-gradient(#3ab76260, #3ab76260), */
+        linear-gradient(#12255050, #12255050),
         linear-gradient(var(--square-color), var(--square-color));
 }
 
