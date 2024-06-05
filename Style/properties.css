@@ -1,0 +1,14 @@
+
+.hide {
+    visibility: hidden;
+}
+
+button:disabled {
+    border: 1px solid #767676;
+    border-radius: 3px;
+    color: black;
+    cursor: inherit;
+    background-color: #fff;
+    background: #fff;
+    padding: 3px 5px;
+}

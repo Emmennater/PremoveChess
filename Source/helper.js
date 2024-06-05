@@ -33,8 +33,10 @@ function getCoordinates(fromCol, fromRow, toCol, toRow) {
 }
 
 function getPieceSrcUrl(letter) {
+    // let theme = "icy_sea";
+    let theme = "neo";
     let side = letter.toUpperCase() == letter ? "w" : "b";
-    return `https://images.chesscomfiles.com/chess-themes/pieces/icy_sea/150/${side + letter.toLowerCase()}.png`;
+    return `https://images.chesscomfiles.com/chess-themes/pieces/${theme}/150/${side + letter.toLowerCase()}.png`;
 }
 
 function setMainCursor(cursor) {
@@ -43,4 +45,34 @@ function setMainCursor(cursor) {
 
 function reflow(elt) {
     elt.offsetHeight; // Reading offsetHeight triggers a reflow
+}
+
+function playSound(audioFile) {
+    const audio = new Audio(audioFile);
+    audio.play();
+}
+
+function setCopyButton(buttonElem, inputElem) {
+    buttonElem.addEventListener("click", function() {
+        var textToCopy = inputElem.value;
+        navigator.clipboard.writeText(textToCopy).then(function() {
+            Notification.show("Copied to clipboard!");
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    });
+}
+
+function randomString(len) {
+    // Generate a random stringth of the given length
+    let s = "";
+    for (let i = 0; i < len; i++) {
+        s += Math.floor(Math.random() * 10).toString();
+    }
+    return s;
+}
+
+function isMobileDevice() {
+    const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+    return mobileRegex.test(navigator.userAgent);
 }

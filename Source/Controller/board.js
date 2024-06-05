@@ -11,20 +11,30 @@ class ChessBoard {
         ChessBoard.activeGame = game;
     }
 
-    static resetBoard() {
+    static resetBoard(fen = defaultFen, isSolo = true, opponentsTurn) {
+        if (isSolo && ChessElements.flipped) {
+            ChessElements.flipBoard();
+        }
+        
         ChessBoard.gameOver = false;
         ChessBoard.lastPremove = null;
         ChessBoard.whitesMove = true;
-        ChessBoard.activeGame.loadFen(defaultFen);
+        ChessBoard.activeGame.loadFen(fen);
         ChessBoard.activeGame.getLegalPremoves(true);
         ChessBoard.updatePieces(ChessBoard.activeGame);
+        ChessActions.isSoloGame = isSolo;
+        ChessActions.opponentsTurn = opponentsTurn;
         ChessElements.resetStates();
+
+        const turnText = document.getElementById("turn-text");
+        
+        ChessBoard.updateGameOver();
     }
 
     static movePiece(fromCol, fromRow, toCol, toRow, animate = false) {
         ChessBoard.pieceAnimating++;
 
-        const boardRect = ChessBoard.getBoardRect();
+        const boardRect = ChessElements.getBoardRect();
         const fromSquare = ChessElements.getSquareAt(fromCol, fromRow);
         const toSquare = ChessElements.getSquareAt(toCol, toRow);
         const fromPos = fromSquare.getBoundingClientRect();
@@ -138,11 +148,18 @@ class ChessBoard {
         } else {
             // Generate initial moves for second player
             ChessBoard.activeGame.getLegalPremoves(!ChessBoard.whitesMove);
+            if (ChessBoard.activeGame.premoves.length === 0) {
+                if (ChessBoard.activeGame.inCheck()) {
+                    ChessBoard.gameOver = "checkmate";
+                } else {
+                    ChessBoard.gameOver = "stalemate";
+                }
+            }
         }
 
         // Highlight illegal move
         if (!moveIsLegal) {
-            ChessBoard.gameOver = true;
+            ChessBoard.gameOver = "illegal move";
             ChessElements.setSquareState(premove.move[0], premove.move[1], "illegal-piece", true);
             ChessElements.setSquareState(premove.move[2], premove.move[3], "illegal-move", true);
         }
@@ -156,6 +173,13 @@ class ChessBoard {
         // Update last premove
         ChessBoard.lastPremove = { move:[fromCol, fromRow, toCol, toRow], promotionPiece };
         ChessBoard.whitesMove = !ChessBoard.whitesMove;
+
+        if (!ChessActions.isSoloGame) {
+            ChessActions.opponentsTurn = !ChessActions.opponentsTurn;
+        }
+
+        // Update text
+        ChessBoard.updateGameOver();
 
         return moveIsLegal;
     }
@@ -200,7 +224,8 @@ class ChessBoard {
 
         for (const move of moves) {
             const isCapture = ChessBoard.activeGame.getPieceAt(move.move[2], move.move[3]);
-            ChessElements.setSquareState(move.move[2], move.move[3], isCapture ? "premove-capture" : "premove-move", true);
+            ChessElements.setSquareState(move.move[2], move.move[3], "premove-dest", true);
+            if (isCapture) ChessElements.setSquareState(move.move[2], move.move[3], "oc", true);
         }
     }
 
@@ -208,32 +233,50 @@ class ChessBoard {
         const moves = ChessBoard.activeGame.getLegalMovesAt(col, row);
 
         for (const move of moves) {
-            ChessElements.setSquareState(move.move[2], move.move[3], move.captured ? "possible-capture" : "possible-move", true);
+            ChessElements.setSquareState(move.move[2], move.move[3], "move-dest", true);
+            if (move.captured) ChessElements.setSquareState(move.move[2], move.move[3], "oc", true);
         }
     }
 
     static hideAvailableMoves() {
-        const captureTiles = document.getElementsByClassName("possible-capture");
-        const moveTiles = document.getElementsByClassName("possible-move");
-        Array.from(captureTiles).forEach(e => e.classList.remove("possible-capture"));
-        Array.from(moveTiles).forEach(e => e.classList.remove("possible-move"));
+        const moveTiles = document.getElementsByClassName("move-dest");
+        const captureTiles = document.getElementsByClassName("oc");
+        Array.from(moveTiles).forEach(e => e.classList.remove("move-dest"));
+        Array.from(captureTiles).forEach(e => e.classList.remove("oc"));
     }
 
     static hideAvailablePremoves() {
-        const captureTiles = document.getElementsByClassName("premove-capture");
-        const moveTiles = document.getElementsByClassName("premove-move");
-        Array.from(captureTiles).forEach(e => e.classList.remove("premove-capture"));
-        Array.from(moveTiles).forEach(e => e.classList.remove("premove-move"));
+        const moveTiles = document.getElementsByClassName("premove-dest");
+        const captureTiles = document.getElementsByClassName("oc");
+        Array.from(moveTiles).forEach(e => e.classList.remove("premove-dest"));
+        Array.from(captureTiles).forEach(e => e.classList.remove("oc"));
     }
 
-    static getBoardRect() {
-        const board = document.getElementById("board");
-        return board.getBoundingClientRect();
-    }
+    static updateGameOver() {
+        const turnText = document.getElementById("turn-text");
 
-    static dimBoard(bool) {
-        const board = document.getElementById("board");
-        if (bool) board.classList.add("dim");
-        else board.classList.remove("dim");
+        if (ChessActions.isSoloGame) {
+            turnText.innerHTML = ChessBoard.whitesMove ? "White's Turn" : "Black's Turn";
+        } else {
+            if (ChessActions.opponentsTurn) {
+                turnText.innerHTML = "Opponents Turn";
+            } else {
+                turnText.innerHTML = "Your Turn";
+            }
+        }
+
+        if (ChessBoard.gameOver) {
+            switch (ChessBoard.gameOver) {
+                case "checkmate":
+                    turnText.textContent = "Checkmate - " + (ChessBoard.whitesMove ? "White" : "Black") + " wins!";
+                    break;
+                case "stalemate":
+                    turnText.textContent = "Stalemate";
+                    break;
+                case "illegal move":
+                    turnText.textContent = "Illegal move - " + (ChessBoard.whitesMove ? "Black" : "White") + " wins!";
+                    break;
+            }
+        }
     }
 }

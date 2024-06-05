@@ -1,0 +1,45 @@
+.notification {
+    --notification-duration: 5s;
+    
+    z-index: 6;
+    position: fixed;
+    margin: 10px;
+    right: 0px;
+    padding: 4px 8px;
+    min-width: 180px;
+
+    text-align: center;
+    font-size: 20px;
+    font-family: "Consolas";
+    color: white;
+    background-color: #00000070;
+
+    border-radius: 4px;
+    border: solid 2px white;
+    box-shadow: 0px 3px 4px #00000060;
+    
+    animation: fade-in-out var(--notification-duration) ease-in-out;
+    transition: top 0.5s ease;
+}
+
+@keyframes fade-in-out {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}

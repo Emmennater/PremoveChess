@@ -10,6 +10,11 @@
     ChessBoard.updatePieces(game);
     ChessActions.setBoardEvents(game);
 
+    MenuEvents.init();
+    MenuEvents.openMainMenu();
+    MenuEvents.serverIsOnline();
+    // MenuEvents.serverIsOffline();
+
     requestAnimationFrame(loop);
 })();
 

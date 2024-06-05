@@ -1,19 +1,31 @@
 
+.board-wrapper {
+    display: flex;
+    
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
 .board {
     display: grid;
     contain: layout;
     grid-template-rows: repeat(8, 1fr);
+    grid-template-columns: repeat(8, 1fr);
     /* width: calc(min(60vw, 60vh));
     height: calc(min(60vw, 60vh)); */
     background-color: #333;
     transition: filter 0.2s;
+    background-image: url("https://lichess1.org/assets/images/board/grey.jpg");
+    background-size: cover;
 }
 
 .square {
     --square-color: #ffffff;
-    width: 75px;
-    height: 75px;
-    background-color: var(--square-color);
+    width: var(--square-size);
+    height: var(--square-size);
 }
 
 .square.even-square {
@@ -27,90 +39,86 @@
 .square.selected {
     background:
         /* linear-gradient(#3ab76260, #3ab76260), */
-        linear-gradient(#12255050, #12255050),
-        linear-gradient(var(--square-color), var(--square-color));
+        /* linear-gradient(#12255050, #12255050); */
+        rgba(20, 30, 85, .5);
 }
 
-.square.possible-move {
-    background:
-        radial-gradient(#00000030 22%, transparent calc(22% + 0.1px)),
-        linear-gradient(var(--square-color), var(--square-color));
+.square.move-dest {
+    background: radial-gradient(rgba(20, 85, 30, 0.5) 19%, rgba(0, 0, 0, 0) 20%);
 }
 
-.square.possible-capture {
-    background:
-        radial-gradient(transparent calc(75% - 0.1px), #00000030 75%),
-        linear-gradient(var(--square-color), var(--square-color));
+.square.premove-dest {
+    background: radial-gradient(rgba(20, 30, 85, 0.5) 19%, rgba(0, 0, 0, 0) 20%);
 }
 
-.square.premove-move {
-    background:
-        /* radial-gradient(#00000030 22%, transparent calc(22% + 0.1px)), */
-        radial-gradient(#12255050 22%, transparent calc(22% + 0.1px)),
-        linear-gradient(var(--square-color), var(--square-color));
+.square.oc.move-dest {
+    background: radial-gradient(transparent 0%, transparent 79%, rgba(20, 85, 0, 0.3) 80%);
 }
 
-.square.premove-capture {
+.square.oc.premove-dest {
+    background: radial-gradient(transparent 0%, transparent 79%, rgba(20, 30, 85, 0.2) 80%);
+}
+
+.square.premove-dest:hover {
     background:
-        /* radial-gradient(transparent calc(75% - 0.1px), #00000030 75%), */
-        radial-gradient(transparent calc(75% - 0.1px), #12255050 75%),
-        linear-gradient(var(--square-color), var(--square-color));
+        rgba(20, 30, 85, .2);
+    cursor: default;
 }
 
 .square.attacked {
     background:
-        linear-gradient(#ff000030, #ff000030),
-        linear-gradient(var(--square-color), var(--square-color));
+        linear-gradient(#ff000030, #ff000030);
 }
 
 .square.premove {
     background:
         /* linear-gradient(#d81d1d60, #d81d1d60), */
-        linear-gradient(#15317450, #15317450),
+        /* linear-gradient(#15317450, #15317450) */
         /* linear-gradient(#00000050, #00000050), */
-        linear-gradient(var(--square-color), var(--square-color));
-    }
+        rgba(20, 30, 85, .5);
+}
     
 .square.check {
     background:
-        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
-        linear-gradient(var(--square-color), var(--square-color));
+        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%);
 }
     
 .square.check.premove {
     background:
         radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
-        linear-gradient(#15317450, #15317450),
-        linear-gradient(var(--square-color), var(--square-color));
+        /* linear-gradient(#15317450, #15317450); */
+        rgba(20, 30, 85, .5);
 }
 
 .square.illegal-piece {
     background:
         linear-gradient(#ff000050, #ff000050),
-        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%),
-        linear-gradient(var(--square-color), var(--square-color));
+        radial-gradient(ellipse at center, rgb(255, 0, 0) 0%, rgb(231, 0, 0) 25%, rgba(169, 0, 0, 0) 89%, rgba(158, 0, 0, 0) 100%);
 }
 
 .square.illegal-move {
     background:
-        linear-gradient(#ff000050, #ff000050),
-        linear-gradient(var(--square-color), var(--square-color));
+        linear-gradient(#ff000050, #ff000050);
 }
 
 .piece {
-    width: 75px;
-    height: 75px;
+    width: var(--square-size);
+    height: var(--square-size);
     background-size: cover;
     background-position: center;
     cursor: grab;
     z-index: 1;
 }
 
+.piece.ghost {
+    opacity: 0.3;
+}
+
 #picked-up-piece {
     position: absolute;
     margin: -37.5px -37.5px;
-    width: 75px;
-    height: 75px;
+    width: var(--square-size);
+    height: var(--square-size);
     background-size: cover;
     background-position: center;
     pointer-events: none;
@@ -183,4 +191,14 @@
 
 .promotion-wrapper:hover .promotion {
     transform: scale(1.0);
+}
+
+.turn-text {
+    position: absolute;
+    transform: translate(0, calc(var(--square-size) * -4 - 26px));
+    font-size: 24px;
+    font-family: "Consolas";
+    text-align: center;
+    color: white;
+    margin-bottom: 10px;
 }

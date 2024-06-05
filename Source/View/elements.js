@@ -14,6 +14,7 @@ class ChessElements {
         
         const board = document.getElementById("board");
         board.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+        board.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
         board.innerHTML = "";
         
         for (let r = 0; r < rows; r++) {
@@ -119,6 +120,7 @@ class ChessElements {
             for (let c = 0; c < ChessElements.gridCols; c++) {
                 const square = ChessElements.getSquareAt(c, r);
                 square.style.gridRow = ChessElements.flipped ? ChessElements.gridRows - r : r + 1;
+                square.style.gridColumn = ChessElements.flipped ? ChessElements.gridCols - c : c + 1;
             }
         }
     }
@@ -135,6 +137,17 @@ class ChessElements {
             }
         });
     }
+
+    static getBoardRect() {
+        const board = document.getElementById("board");
+        return board.getBoundingClientRect();
+    }
+
+    static dimBoard(bool) {
+        const board = document.getElementById("board");
+        if (bool) board.classList.add("dim");
+        else board.classList.remove("dim");
+    }
 }
 
 class PromotionGUI {
@@ -149,7 +162,7 @@ class PromotionGUI {
         PromotionGUI.isPromoting = true;
 
         // Dim board
-        ChessBoard.dimBoard(true);
+        ChessElements.dimBoard(true);
 
         // Promotion GUI position
         const square = ChessElements.getSquareAt(column, row);
@@ -182,7 +195,7 @@ class PromotionGUI {
             `);
 
             promotionWrapper.onclick = () => {
-                ChessBoard.dimBoard(false);
+                ChessElements.dimBoard(false);
                 PromotionGUI.isPromoting = false;
                 PromotionGUI.hidePromotionElements();
                 callback(piece);

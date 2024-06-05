@@ -7,6 +7,9 @@ class ChessActions {
     static startRow = 0;
     static activeGame = null;
     static wasSelected = false;
+    static opponentsTurn = false;
+    static isSoloGame = true;
+    static gameOver = false;
 
     static doIgnoreInput() {
         return ChessBoard.pieceAnimating || PromotionGUI.isPromoting;
@@ -38,14 +41,14 @@ class ChessActions {
 
         document.body.addEventListener("mousedown", e => {
             if (ChessActions.doIgnoreInput()) return;
-            if (!e.target.classList.contains("piece")) {
+            if (!e.target.classList.contains("square") && !e.target.classList.contains("piece")) {
                 ChessActions.deselectSquare();
             }
         });
 
         document.body.addEventListener("mouseup", e => {
             if (ChessActions.doIgnoreInput()) return;
-            if (!e.target.classList.contains("square")) {
+            if (!e.target.classList.contains("square") && !e.target.classList.contains("piece")) {
                 // Put piece back
                 ChessActions.dropPiece(ChessActions.startCol, ChessActions.startRow);
                 ChessActions.deselectSquare();
@@ -74,7 +77,7 @@ class ChessActions {
         const tileSelected = ChessActions.selectedTile.selected;
         const moveIsLegal = ChessActions.activeGame.isLegalPremove(ChessActions.startCol, ChessActions.startRow, col, row);
 
-        if (tileSelected && moveIsLegal) {
+        if (tileSelected && moveIsLegal && !ChessActions.opponentsTurn) {
             ChessActions.moveMade(ChessActions.selectedTile.col, ChessActions.selectedTile.row, col, row, true);
             ChessActions.deselectSquare();
         } else {
@@ -106,7 +109,7 @@ class ChessActions {
         ChessActions.wasSelected = ChessActions.selectedTile.selected && sameSquare;
         
         setMainCursor("grabbing");
-        ChessElements.hidePiece(col, row);
+        ChessElements.getPieceAt(col, row).classList.add("ghost");
         ChessActions.selectSquare(col, row);
         ChessActions.setPickedUpPiece(pieceImage);
     }
@@ -121,12 +124,12 @@ class ChessActions {
         if (piece === "") return false;
 
         // Put piece back
-        ChessElements.setPieceImage(startCol, startRow, piece);
+        ChessElements.getPieceAt(startCol, startRow).classList.remove("ghost");
         ChessActions.setPickedUpPiece("");
         setMainCursor("default");
 
         // Legal move
-        if (game.isLegalPremove(startCol, startRow, col, row)) {
+        if (game.isLegalPremove(startCol, startRow, col, row) && !ChessActions.opponentsTurn) {
             ChessActions.moveMade(startCol, startRow, col, row, false);
             return true;
         }
@@ -139,7 +142,11 @@ class ChessActions {
 
         const makeMove = promotionPiece => {
             const success = ChessBoard.makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, true);
-            if (!success) console.log("Failed to make move");
+
+            // Relay move to opponent if not solo
+            if (!ChessActions.isSoloGame) {
+                ChessNetwork.relayMove(move.move[0], move.move[1], move.move[2], move.move[3], promotionPiece);
+            }
         };
 
         if (move.isPromotion) {
@@ -162,12 +169,19 @@ class ChessActions {
         ChessActions.selectedTile.col = col;
         ChessActions.selectedTile.row = row;
         ChessElements.setSquareState(col, row, "selected", true);
-        ChessBoard.showAvailablePremoves(col, row);
+
+        // Show available premoves
+        if (!ChessActions.opponentsTurn) {
+            ChessBoard.showAvailablePremoves(col, row);
+        }
     }
 
     static setPickedUpPiece(img) {
+        const squareSize = ChessElements.getSquareAt(0, 0).getBoundingClientRect();
         const pickedUpElem = document.getElementById("picked-up-piece");
         pickedUpElem.style.backgroundImage = img;
+        pickedUpElem.style.width = `${squareSize.width}px`;
+        pickedUpElem.style.height = `${squareSize.height}px`;
         ChessActions.pickedUpPiece = img;
     }
 
