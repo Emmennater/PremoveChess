@@ -18,9 +18,9 @@ class ChessBoard {
         
         ChessBoard.gameOver = false;
         ChessBoard.lastPremove = null;
-        ChessBoard.whitesMove = true;
         ChessBoard.activeGame.loadFen(fen);
         ChessBoard.activeGame.getLegalPremoves(true);
+        ChessBoard.whitesMove = ChessBoard.activeGame.isWhitesTurn();
         ChessBoard.updatePieces(ChessBoard.activeGame);
         ChessActions.isSoloGame = isSolo;
         ChessActions.opponentsTurn = opponentsTurn;

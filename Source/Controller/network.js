@@ -61,7 +61,6 @@ class ChessNetwork {
         // Initialize game
         ChessBoard.resetBoard(this.gameFen, false, !this.myTurn);
 
-
         // New game sound effect
         playSound("assets/game-start.mp3");
 
