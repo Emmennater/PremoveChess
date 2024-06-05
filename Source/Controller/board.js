@@ -11,7 +11,7 @@ class ChessBoard {
         ChessBoard.activeGame = game;
     }
 
-    static resetBoard(fen = defaultFen, isSolo = true, opponentsTurn) {
+    static resetBoard(fen = defaultFen, isSolo = true, opponentsTurn = false) {
         if (isSolo && ChessElements.flipped) {
             ChessElements.flipBoard();
         }
@@ -19,11 +19,11 @@ class ChessBoard {
         ChessBoard.gameOver = false;
         ChessBoard.lastPremove = null;
         ChessBoard.activeGame.loadFen(fen);
-        ChessBoard.activeGame.getLegalPremoves(true);
         ChessBoard.whitesMove = ChessBoard.activeGame.isWhitesTurn();
+        ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
         ChessBoard.updatePieces(ChessBoard.activeGame);
         ChessActions.isSoloGame = isSolo;
-        ChessActions.opponentsTurn = opponentsTurn;
+        ChessActions.opponentsTurn = opponentsTurn ^ (!ChessBoard.whitesMove && !isSolo);
         ChessElements.resetStates();
 
         const turnText = document.getElementById("turn-text");
