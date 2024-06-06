@@ -320,7 +320,7 @@ class MenuSettings {
         MenuSettings.addSetting("volume", 100, "volume-slider", value => {
             changeAudioVolume(value / 100);
         });
-        MenuSettings.addSetting("show-premoves", 1, "solo-show-premoves", value => {
+        MenuSettings.addSetting("show-premoves", true, "solo-show-premoves", value => {
             ChessActions.showSoloPremoves = value;
         });
         MenuSettings.addSetting("host-side", "random", "host-side");
@@ -335,6 +335,10 @@ class MenuSettings {
 
     static addSetting(key, value, elemId = null, callback = () => {}) {
         value = localStorage.getItem("menu-settings-" + key) || value;
+
+        if (value === "true") value = true;
+        else if (value === "false") value = false;
+
         MenuSettings.settings[key] = { value, elemId, callback };
         MenuSettings.set(key, value);
 
@@ -344,7 +348,7 @@ class MenuSettings {
         
         switch (elem.type) {
             case "checkbox":
-                elem.onclick = () => MenuSettings.set(key, elem.checked ? 1 : 0);
+                elem.onclick = () => MenuSettings.set(key, elem.checked);
                 break;
             case "select-one":
             case "range":
