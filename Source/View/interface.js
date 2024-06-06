@@ -10,8 +10,12 @@ class MenuEvents {
     static menuOpen = false;
     static menusOpen = [];
     static gameActive = false;
+    static rematchNotification = null;
 
     static init() {
+        // Initialize settings menu
+        MenuSettings.init();
+
         // Set host id copy to clipboard
         const hostID = document.getElementById("host-id");
         const copyHostID = document.getElementById("copy-host-id");
@@ -19,6 +23,27 @@ class MenuEvents {
 
         // Disable quit game button
         MenuEvents.disableButton("quit-button");
+
+        // Apply menu sound effects
+        const menuButtons = document.getElementsByClassName("menu-button");
+        const toolbarButtons = document.getElementsByClassName("button");
+        const buttons = [...menuButtons, ...toolbarButtons];
+        buttons.forEach(button => button.addEventListener("click", () => {
+            playSound("Assets/button-click.m4a");
+        }));
+
+        if (isMobileDevice()) {
+            // Add mobile stylesheet
+            const link = document.createElement("link");
+            link.href = "Style/mobile.css";
+            link.rel = "stylesheet";
+            document.getElementsByTagName("head")[0].appendChild(link);
+        }
+
+        // Window closed
+        window.addEventListener("unload", () => {
+            if (ChessNetwork.isRunning) ChessNetwork.send(ChessNetwork.recipientID, "leave");
+        });
     }
 
     // Open and close menus
@@ -75,12 +100,18 @@ class MenuEvents {
 
     // Menus
     static quitGame() {
+        ChessNetwork.leave();
         MenuEvents.gameHasEnded();
         ChessBoard.resetBoard(defaultFen);
         Network.close();
 
         // Disable quit game button
         MenuEvents.disableButton("quit-button");
+
+        // Autodecline rematch
+        if (MenuEvents.rematchNotification) {
+            MenuEvents.rematchNotification.close(false);
+        }
     }
 
     static openSettingsMenu() {
@@ -106,10 +137,15 @@ class MenuEvents {
     static openJoinMenu() {
         this.openMenu("join");
 
+        // Abort any original join request
+        ChessNetwork.abortJoin();
+
         // Reset settings
         const joinID = document.getElementById("join-id");
+        const loadingIcon = document.getElementById("join-loading");
         joinID.value = "";
         joinID.classList.remove("error-flag");
+        loadingIcon.classList.add("hide");
         MenuEvents.disableButton("join-game-button");
 
         // Setup network
@@ -126,12 +162,12 @@ class MenuEvents {
         this.openMenu("host");
 
         // Reset settings
+        // const sideInput = document.getElementById("host-side");
+        // sideInput.value = MenuSettings.get("host-side");
         const hostID = document.getElementById("host-id");
         const fenInput = document.getElementById("host-fen");
-        const sideInput = document.getElementById("host-side");
         hostID.value = "";
         fenInput.value = defaultFen;
-        sideInput.value = "white";
         hostID.classList.remove("error-flag");
         MenuEvents.disableButton("host-game-button");
         MenuEvents.disableButton("copy-host-id");
@@ -248,6 +284,14 @@ class MenuEvents {
         buttonElem.disabled = false;
     }
 
+    static askForRematch() {
+        const rematchNotif = Notification.ask("Rematch?", accepted => {
+            ChessNetwork.voteRematch(accepted);
+        });
+
+        MenuEvents.rematchNotification = rematchNotif;
+    }
+
     // Statuses
     static serverIsOnline() {
         const serverText = document.getElementById("is-online");
@@ -265,6 +309,70 @@ class MenuEvents {
 
         MenuEvents.disableButton("join-button");
         MenuEvents.disableButton("host-button");
+    }
+}
+
+class MenuSettings {
+    static settings = {};
+
+    static init() {
+        MenuSettings.addSetting("volume", 100, "volume-slider", value => {
+            changeAudioVolume(value / 100);
+        });
+        MenuSettings.addSetting("show-premoves", 1, "solo-show-premoves", value => {
+            ChessActions.showSoloPremoves = value;
+        });
+        MenuSettings.addSetting("host-side", "random", "host-side");
+    }
+
+    static addSetting(key, value, elemId = null, callback = () => {}) {
+        value = localStorage.getItem("menu-settings-" + key) || value;
+        MenuSettings.settings[key] = { value, elemId, callback };
+        MenuSettings.set(key, value);
+
+        // UI listener
+        if (!elemId) return;
+        const elem = document.getElementById(elemId);
+        
+        switch (elem.type) {
+            case "checkbox":
+                elem.onclick = () => MenuSettings.set(key, elem.checked ? 1 : 0);
+                break;
+            case "select-one":
+            case "range":
+            default:
+                elem.oninput = () => MenuSettings.set(key, elem.value);
+                break;
+        }
+    }
+
+    static set(key, value) {
+        MenuSettings.settings[key].value = value;
+        MenuSettings.settings[key].callback(value);
+
+        // Save to local storage
+        localStorage.setItem("menu-settings-" + key, value);
+
+        // Update UI
+        const elemId = MenuSettings.settings[key].elemId;
+        if (!elemId) return;
+        
+        const elem = document.getElementById(elemId);
+        switch (elem.type) {
+            case "checkbox":
+                if (elem.checked != value)
+                    elem.click();
+                break;
+            case "select-one":
+            case "range":
+            default:
+                elem.value = value;
+                break;
+        }
+    }
+
+    static get(key) {
+        return MenuSettings.settings[key].value;
     }
 }
 

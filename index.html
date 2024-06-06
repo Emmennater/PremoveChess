@@ -55,12 +55,19 @@
     <div class="menu-wrapper" id="menu-wrapper">
         <!-- Settings menu -->
         <div id="settings-menu" class="menu" style="display: none;">
+            <div class="menu-box">
+                <label>Volume</label>
+                <hbox>
+                    <input id="volume-slider" type="range" min="0" max="100" value="100">
+                </hbox>
+            </div>
             <div class="menu-button" onclick="MenuEvents.closeCurrentMenu()">Back</div>
         </div>
 
         <!-- Help menu -->
         <div id="help-menu" class="menu" style="display: none;">
             <div class="menu-box">
+                <p>Version 1.0.0</p>
                 <div>Premove your way to victory!</div>
                 <div>Outsmart your opponent in a game of chess where you can't see your opponent's next move.</div>
                 <div>Any illegal move will result in loss. Use this to your advantage!</div>
@@ -81,8 +88,16 @@
         <!-- Solo menu -->
         <div id="solo-menu" class="menu" style="display: none;">
             <div class="menu-box">
-                Fen
-                <input id="solo-fen" type="text">
+                <label>Fen</label>
+                <hbox>
+                    <input id="solo-fen" type="text">
+                </hbox>
+
+                <label>
+                    Show Premoves
+                    <input id="solo-show-premoves" type="checkbox">
+                </label>
+
                 <button class="menu-box-button" onclick="MenuEvents.startSoloGame()">Start Game</button>
             </div>
             <div class="menu-button" onclick="MenuEvents.closeCurrentMenu()">Back</div>
@@ -100,8 +115,11 @@
                 </div>
             </div>
             <div class="menu-box">
-                Host ID
-                <input id="join-id" type="text">
+                <label>Host ID</label>
+                <hbox>
+                    <input id="join-id" type="text">
+                </hbox>
+
                 <button id="join-game-button" class="menu-box-button" onclick="MenuEvents.joinGame()">Join Game</button>
             </div>
             <div class="menu-button" onclick="MenuEvents.closeCurrentMenu()">Back</div>
@@ -110,21 +128,26 @@
         <!-- Host menu -->
         <div id="host-menu" class="menu" style="display: none;">
             <div class="menu-box">
-                Host ID
+                <label>Host ID</label>
                 <hbox>
                     <input id="host-id" type="text" readonly>
                     <button id="copy-host-id"class="menu-box-button copy">Copy</button>
                 </hbox>
-                <label for="host-fen">Fen</label>
+
+                <label>Fen</label>
                 <hbox>
                     <input id="host-fen" type="text">
                 </hbox>
-                <label for="sides">Side</label>
-                <select id="host-side" name="sides" id="sides">
-                    <option value="white">White</option>
-                    <option value="black">Black</option>
-                    <option value="random">Random</option>
-                </select>
+                
+                <label>Side</label>
+                <hbox>
+                    <select id="host-side" name="sides" id="sides">
+                        <option value="white">White</option>
+                        <option value="black">Black</option>
+                        <option value="random">Random</option>
+                    </select>
+                </hbox>
+
                 <button id="host-game-button" class="menu-box-button" onclick="MenuEvents.submitHosting()">Host Game</button>
             </div>
             <div class="menu-button" onclick="MenuEvents.closeCurrentMenu()">Back</div>
@@ -134,8 +157,8 @@
     <!-- Toolbar -->
     <div id="toolbar" class="toolbar">
         <button class="button" onclick="MenuEvents.openHelpMenu()">Help</button>
-        <button class="button" onclick="MenuEvents.openMainMenu()">New Game</button>
         <button class="button" onclick="MenuEvents.openSettingsMenu()">Settings</button>
+        <button class="button" onclick="MenuEvents.openMainMenu()">New Game</button>
     </div>
 
     <!-- Source -->

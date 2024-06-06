@@ -1,0 +1,17 @@
+
+/* Mobile correct buttons */
+.menu-button:hover {
+    transform: scale(1.0);
+}
+
+.menu-button:active {
+    transform: scale(0.96);
+}
+
+.button:hover {
+    transform: scale(1.0);
+}
+
+.button:active {
+    transform: scale(0.96);
+}

@@ -47,11 +47,6 @@ function reflow(elt) {
     elt.offsetHeight; // Reading offsetHeight triggers a reflow
 }
 
-function playSound(audioFile) {
-    const soundObject = audioObjects[audioFile];
-    if (soundObject) soundObject.play();
-}
-
 function setCopyButton(buttonElem, inputElem) {
     buttonElem.addEventListener("click", function() {
         var textToCopy = inputElem.value;

@@ -3,6 +3,9 @@ class ChessNetwork {
     static recipientID = null;
     static myTurn = true;
     static gameFen = null;
+    static interruptJoinRequest = null;
+    static rematch = { myVote: false, recipientVote: false };
+    static isRunning = false;
 
     static host(fenString, side) {
         // Initialize new game
@@ -32,12 +35,19 @@ class ChessNetwork {
         loadingIcon.classList.remove("hide");
         let interupted = false;
 
-        // Interrupt if called again before timeout (TODO)
+        // Interrupt if called again before timeout
+        ChessNetwork.abortJoin();
+
         setTimeout(() => {
             if (interupted) return;
             loadingIcon.classList.add("hide");
             callback(false);
         }, 10000);
+
+        // Create new interrupt
+        ChessNetwork.interruptJoinRequest = () => {
+            interupted = true;
+        };
 
         Network.send(hostID, "join " + Network.id);
         Network.on("message", msg => {
@@ -56,11 +66,31 @@ class ChessNetwork {
         });
     }
 
+    static abortJoin() {
+        // Stop existing join request
+        if (ChessNetwork.interruptJoinRequest) {
+            ChessNetwork.interruptJoinRequest();
+            ChessNetwork.interruptJoinRequest = null;
+        }
+    }
+
+    static leave() {
+        Network.send(this.recipientID, "leave");
+        this.isRunning = false;
+    }
+
     static syncComplete() {
-        if (!this.myTurn) ChessElements.flipBoard();
-        
+        this.isRunning = true;
+
+        // Flip board if necessary
+        if (this.myTurn === ChessElements.flipped) ChessElements.flipBoard();
+
         // Initialize game
         ChessBoard.resetBoard(this.gameFen, false, !this.myTurn);
+
+        // Reset rematch conditions
+        this.rematch.myVote = false;
+        this.rematch.recipientVote = false;
 
         // New game sound effect
         playSound("Assets/game-start.mp3");
@@ -76,12 +106,30 @@ class ChessNetwork {
                 ChessBoard.makePremove(move[0], move[1], move[2], move[3], promotionPiece, false);
             }
 
-            // Add behavior for opponent leaving the game
+            // Opponent leaving the game
             if (parts[0] === "leave") {
-                ChessBoard.gameOver = "opponent left";
-                ChessBoard.whiteWins = !this.myTurn;
-                ChessBoard.updateGameOverMessage();
-                playSound("Assets/game-end.mp3");
+                if (!ChessBoard.gameOver) {
+                    ChessBoard.gameOver = "opponent left";
+                    ChessBoard.whiteWins = this.myTurn;
+                    ChessBoard.updateGameOverMessage();
+                    playSound("Assets/game-end.mp3");
+                }
+
+                Notification.show("Opponent left");
+                this.isRunning = false;
+            }
+
+            // Rematch
+            if (parts[0] === "rematch") {
+                this.rematch.recipientVote = true;
+                if (this.rematch.myVote) this.startRematch();
+                else Notification.show("Opponent wants a rematch");
+            }
+
+            // No rematch
+            if (parts[0] === "nomatch") {
+                this.rematch.recipientVote = false;
+                Notification.show("Opponent declines rematch");
             }
         });
     }
@@ -89,5 +137,20 @@ class ChessNetwork {
     static relayMove(fromCol, fromRow, toCol, toRow, promotionPiece) {
         const moveData = "move " + fromCol + " " + fromRow + " " + toCol + " " + toRow + " " + promotionPiece;
         Network.send(this.recipientID, moveData);
+    }
+
+    static voteRematch(accepted) {
+        this.rematch.myVote = accepted;
+        Network.send(this.recipientID, accepted ? "rematch" : "nomatch");
+        if (accepted && this.rematch.recipientVote) this.startRematch();
+    }
+
+    static startRematch() {
+        // Ensure both players have voted
+        if (!this.rematch.myVote || !this.rematch.recipientVote) throw Error("Rematch conditions not met");
+
+        // Switch sides
+        this.myTurn = !this.myTurn;
+        this.syncComplete();
     }
 }

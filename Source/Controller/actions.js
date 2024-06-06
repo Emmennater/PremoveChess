@@ -10,6 +10,7 @@ class ChessActions {
     static opponentsTurn = false;
     static isSoloGame = true;
     static gameOver = false;
+    static showSoloPremoves = true;
 
     static doIgnoreInput() {
         return ChessBoard.pieceAnimating || PromotionGUI.isPromoting;
@@ -141,7 +142,8 @@ class ChessActions {
         const move = ChessBoard.activeGame.findPremove(fromCol, fromRow, toCol, toRow);
 
         const makeMove = promotionPiece => {
-            const success = ChessBoard.makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, true);
+            const showPremove = !ChessActions.isSoloGame || ChessActions.showSoloPremoves;
+            const success = ChessBoard.makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, showPremove);
 
             // Relay move to opponent if not solo
             if (!ChessActions.isSoloGame) {

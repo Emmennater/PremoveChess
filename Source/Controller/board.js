@@ -166,6 +166,9 @@ class ChessBoard {
             } else {
                 ChessBoard.updateTurnMessage();
             }
+
+            // Check if playing the next premove is legal
+            ChessBoard.checkIfNextPremoveLegal();
         });
         
         return true;
@@ -173,6 +176,7 @@ class ChessBoard {
 
     static makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, show = false, sound = true) {
         const premove = ChessBoard.lastPremove;
+        const nextPremove = { move: [fromCol, fromRow, toCol, toRow], promotionPiece };
         let moveIsLegal = true;
 
         // Change turn
@@ -182,8 +186,11 @@ class ChessBoard {
             ChessActions.opponentsTurn = !ChessActions.opponentsTurn;
         }
 
+        // Update last premove
+        ChessBoard.lastPremove = nextPremove;
+
         // Play last premove
-        if (ChessBoard.lastPremove) {
+        if (premove) {
             ChessBoard.setWhitesTurn(ChessBoard.whitesMove);
             ChessBoard.activeGame.getLegalMoves();
             moveIsLegal = ChessBoard.makeMove(...premove.move, premove.promotionPiece, true);
@@ -194,6 +201,9 @@ class ChessBoard {
             ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
             ChessBoard.updateTurnMessage();
             if (sound) playSound("Assets/premove.mp3");
+
+            // Check if playing the next premove is legal
+            ChessBoard.checkIfNextPremoveLegal();
         }
 
         // Highlight illegal move
@@ -208,10 +218,28 @@ class ChessBoard {
             ChessElements.setSquareState(toCol, toRow, "premove", true);
         }
 
-        // Update last premove
-        ChessBoard.lastPremove = { move:[fromCol, fromRow, toCol, toRow], promotionPiece };
-
         return moveIsLegal;
+    }
+
+    static checkIfNextPremoveLegal() {
+        const premove = ChessBoard.lastPremove;
+        if (!ChessBoard.isLegalPremove(premove.move[0], premove.move[1], premove.move[2], premove.move[3], premove.promotionPiece)) {
+            // Premature game over
+            ChessBoard.gameOver = "illegal move";
+            ChessBoard.whiteWins = ChessBoard.whitesMove;
+            ChessBoard.updateGameOverMessage();
+            playSound("Assets/game-end.mp3");
+
+            // Show illegal move
+            ChessElements.setSquareState(premove.move[0], premove.move[1], "illegal-piece", true);
+            ChessElements.setSquareState(premove.move[2], premove.move[3], "illegal-move", true);
+        }
+    }
+
+    static isLegalPremove(fromCol, fromRow, toCol, toRow, promotionPiece) {
+        ChessBoard.activeGame.getLegalMoves();
+        const move = ChessBoard.activeGame.findMove(fromCol, fromRow, toCol, toRow, promotionPiece);
+        return move ? true : false;
     }
 
     static setWhitesTurn(isWhitesTurn) {
@@ -282,6 +310,11 @@ class ChessBoard {
         Array.from(captureTiles).forEach(e => e.classList.remove("oc"));
     }
 
+    static isOpponentWhite() {
+        // Turn started out on
+        return !ChessNetwork.myTurn;
+    }
+
     static updateTurnMessage() {
         if (ChessBoard.gameOver) return;
 
@@ -318,7 +351,13 @@ class ChessBoard {
                 case "illegal move":
                     boardMsg.textContent = "Illegal Move - " + (ChessBoard.whiteWins ? "White" : "Black") + " Wins!";
                     break;
+                case "opponent left":
+                    boardMsg.textContent = "Opponent Left - " + (ChessBoard.isOpponentWhite() ? "Black" : "White") + " Wins!";
+                    break;
             }
+
+            // Game over
+            if (ChessBoard.gameOver && ChessNetwork.isRunning) MenuEvents.askForRematch();
         }
     }
 }
