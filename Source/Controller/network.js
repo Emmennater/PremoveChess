@@ -32,6 +32,7 @@ class ChessNetwork {
         loadingIcon.classList.remove("hide");
         let interupted = false;
 
+        // Interrupt if called again before timeout (TODO)
         setTimeout(() => {
             if (interupted) return;
             loadingIcon.classList.add("hide");
@@ -73,6 +74,14 @@ class ChessNetwork {
                 const move = [parseInt(parts[1], 10), parseInt(parts[2], 10), parseInt(parts[3], 10), parseInt(parts[4], 10)];
                 const promotionPiece = parts[5] === "null" ? null : parts[5];
                 ChessBoard.makePremove(move[0], move[1], move[2], move[3], promotionPiece, false);
+            }
+
+            // Add behavior for opponent leaving the game
+            if (parts[0] === "leave") {
+                ChessBoard.gameOver = "opponent left";
+                ChessBoard.whiteWins = !this.myTurn;
+                ChessBoard.updateGameOverMessage();
+                playSound("Assets/game-end.mp3");
             }
         });
     }

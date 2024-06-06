@@ -175,10 +175,12 @@ class ChessBoard {
         const premove = ChessBoard.lastPremove;
         let moveIsLegal = true;
 
-        // if (sound) playSound("Assets/premove.mp3");
-
         // Change turn
         ChessBoard.whitesMove = !ChessBoard.whitesMove;
+
+        if (!ChessActions.isSoloGame) {
+            ChessActions.opponentsTurn = !ChessActions.opponentsTurn;
+        }
 
         // Play last premove
         if (ChessBoard.lastPremove) {
@@ -191,6 +193,7 @@ class ChessBoard {
             // Generate initial moves for second player
             ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
             ChessBoard.updateTurnMessage();
+            if (sound) playSound("Assets/premove.mp3");
         }
 
         // Highlight illegal move
@@ -203,10 +206,6 @@ class ChessBoard {
         if (show) {
             ChessElements.setSquareState(fromCol, fromRow, "premove", true);
             ChessElements.setSquareState(toCol, toRow, "premove", true);
-        }
-
-        if (!ChessActions.isSoloGame) {
-            ChessActions.opponentsTurn = !ChessActions.opponentsTurn;
         }
 
         // Update last premove
