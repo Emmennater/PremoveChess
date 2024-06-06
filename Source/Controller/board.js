@@ -222,6 +222,9 @@ class ChessBoard {
     }
 
     static checkIfNextPremoveLegal() {
+        // Skip if game is already over
+        if (ChessBoard.gameOver) return;
+        
         const premove = ChessBoard.lastPremove;
         if (!ChessBoard.isLegalPremove(premove.move[0], premove.move[1], premove.move[2], premove.move[3], premove.promotionPiece)) {
             // Premature game over
