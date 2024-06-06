@@ -148,6 +148,12 @@ class ChessElements {
         if (bool) board.classList.add("dim");
         else board.classList.remove("dim");
     }
+
+    static setBackgroundImage(url) {
+        if (!url) return;
+        const board = document.getElementById("board");
+        board.style.backgroundImage = `url("${url}")`;
+    }
 }
 
 class PromotionGUI {

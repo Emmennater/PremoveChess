@@ -1,4 +1,6 @@
 
+activePieceStyle = "neo";
+
 String.prototype.matches = function(string) {
     return this.substring(0, string.length) == string;
 }
@@ -33,10 +35,13 @@ function getCoordinates(fromCol, fromRow, toCol, toRow) {
 }
 
 function getPieceSrcUrl(letter) {
-    // let theme = "icy_sea";
-    let theme = "neo";
+    let theme = activePieceStyle; // neo, icy_sea
     let side = letter.toUpperCase() == letter ? "w" : "b";
     return `https://images.chesscomfiles.com/chess-themes/pieces/${theme}/150/${side + letter.toLowerCase()}.png`;
+}
+
+function changePieceStyle(style) {
+    activePieceStyle = style;
 }
 
 function setMainCursor(cursor) {

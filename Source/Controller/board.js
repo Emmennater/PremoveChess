@@ -256,6 +256,7 @@ class ChessBoard {
     }
 
     static updatePieces(game) {
+        if (!game) return;
         for (let c = 0; c < game.cols; c++) {
             for (let r = 0; r < game.rows; r++) {
                 const type = game.getPieceAt(c, r);

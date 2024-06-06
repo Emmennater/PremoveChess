@@ -67,5 +67,7 @@ class Notification {
         notification.appendChild(message);
         notification.appendChild(yesButton);
         notification.appendChild(noButton);
+
+        return notification;
     }
 }

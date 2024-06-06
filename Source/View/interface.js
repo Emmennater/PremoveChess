@@ -111,6 +111,7 @@ class MenuEvents {
         // Autodecline rematch
         if (MenuEvents.rematchNotification) {
             MenuEvents.rematchNotification.close(false);
+            MenuEvents.rematchNotification = null;
         }
     }
 
@@ -323,6 +324,13 @@ class MenuSettings {
             ChessActions.showSoloPremoves = value;
         });
         MenuSettings.addSetting("host-side", "random", "host-side");
+        MenuSettings.addSetting("piece-style", "neo", "piece-style", value => {
+            changePieceStyle(value);
+            ChessBoard.updatePieces(ChessBoard.activeGame);
+        });
+        MenuSettings.addSetting("board-style", "https://lichess1.org/assets/images/board/grey.jpg", "board-style", value => {
+            ChessElements.setBackgroundImage(value);
+        });
     }
 
     static addSetting(key, value, elemId = null, callback = () => {}) {
