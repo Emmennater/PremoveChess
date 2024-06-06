@@ -48,8 +48,8 @@ function reflow(elt) {
 }
 
 function playSound(audioFile) {
-    const audio = new Audio(audioFile);
-    audio.play();
+    const soundObject = audioObjects[audioFile];
+    if (soundObject) soundObject.play();
 }
 
 function setCopyButton(buttonElem, inputElem) {

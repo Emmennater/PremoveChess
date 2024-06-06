@@ -62,7 +62,7 @@ class ChessNetwork {
         ChessBoard.resetBoard(this.gameFen, false, !this.myTurn);
 
         // New game sound effect
-        playSound("assets/game-start.mp3");
+        playSound("Assets/game-start.mp3");
 
         Notification.show("Game started", 5, false);
 
@@ -73,7 +73,6 @@ class ChessNetwork {
                 const move = [parseInt(parts[1], 10), parseInt(parts[2], 10), parseInt(parts[3], 10), parseInt(parts[4], 10)];
                 const promotionPiece = parts[5] === "null" ? null : parts[5];
                 ChessBoard.makePremove(move[0], move[1], move[2], move[3], promotionPiece, false);
-                playSound("Assets/premove.mp3");
             }
         });
     }
@@ -81,6 +80,5 @@ class ChessNetwork {
     static relayMove(fromCol, fromRow, toCol, toRow, promotionPiece) {
         const moveData = "move " + fromCol + " " + fromRow + " " + toCol + " " + toRow + " " + promotionPiece;
         Network.send(this.recipientID, moveData);
-        playSound("Assets/premove.mp3");
     }
 }

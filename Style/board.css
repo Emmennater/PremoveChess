@@ -193,7 +193,7 @@
     transform: scale(1.0);
 }
 
-.turn-text {
+.board-message {
     position: absolute;
     transform: translate(0, calc(var(--square-size) * -4 - 26px));
     font-size: 24px;

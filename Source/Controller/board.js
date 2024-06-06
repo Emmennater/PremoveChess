@@ -6,6 +6,7 @@ class ChessBoard {
     static lastPremove = null;
     static whitesMove = true;
     static gameOver = false;
+    static whiteWins = false;
 
     static setActiveGame(game) {
         ChessBoard.activeGame = game;
@@ -17,6 +18,7 @@ class ChessBoard {
         }
         
         ChessBoard.gameOver = false;
+        ChessBoard.whiteWins = false;
         ChessBoard.lastPremove = null;
         ChessBoard.activeGame.loadFen(fen);
         ChessBoard.whitesMove = ChessBoard.activeGame.isWhitesTurn();
@@ -28,7 +30,8 @@ class ChessBoard {
 
         const turnText = document.getElementById("turn-text");
         
-        ChessBoard.updateGameOver();
+        ChessBoard.updateTurnMessage();
+        ChessBoard.updateGameOverMessage();
     }
 
     static movePiece(fromCol, fromRow, toCol, toRow, animate = false) {
@@ -122,44 +125,76 @@ class ChessBoard {
     static makeMove(fromCol, fromRow, toCol, toRow, promotionPiece, animate = false) {
         const game = ChessBoard.activeGame;
         const move = game.findMove(fromCol, fromRow, toCol, toRow);
-        if (!move) return false;
+        const whitesTurn = game.isWhitesTurn();
+
+        if (!move) {
+            ChessBoard.gameOver = "illegal move";
+            ChessBoard.whiteWins = !whitesTurn;
+            ChessBoard.updateGameOverMessage();
+            playSound("Assets/game-end.mp3");
+            return false;
+        }
+
+        // Play move sound
+        if (move.san === "O-O" || move.san === "O-O-O") {
+            playSound("Assets/castle.mp3");
+        } else if (move.promotion) {
+            playSound("Assets/promote.mp3");
+        } else if (move.san.includes("+")) {
+            playSound("Assets/move-check.mp3");
+        } else if (move.captured) {
+            playSound("Assets/capture.mp3");
+        } else if (ChessActions.opponentsTurn) {
+            playSound("Assets/move-opponent.mp3");
+        } else {
+            playSound("Assets/move-self.mp3");
+        }
 
         ChessBoard.moveUpdateGUI(move, animate, promotionPiece, () => {
             const type = promotionPiece ? promotionPiece.toLowerCase() : null;
             game.makeMove(fromCol, fromRow, toCol, toRow, type);
-            ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
+            game.getLegalPremoves(whitesTurn);
             ChessBoard.highlightChecks();
+
+            // Game over
+            const endGameState = game.getEndgameState();
+            if (endGameState) {
+                ChessBoard.gameOver = endGameState;
+                ChessBoard.whiteWins = whitesTurn;
+                ChessBoard.updateGameOverMessage();
+                playSound("Assets/game-end.mp3");
+            } else {
+                ChessBoard.updateTurnMessage();
+            }
         });
         
         return true;
     }
 
-    static makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, show = false) {
+    static makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, show = false, sound = true) {
         const premove = ChessBoard.lastPremove;
         let moveIsLegal = true;
 
+        // if (sound) playSound("Assets/premove.mp3");
+
+        // Change turn
+        ChessBoard.whitesMove = !ChessBoard.whitesMove;
+
         // Play last premove
         if (ChessBoard.lastPremove) {
-            ChessBoard.setWhitesTurn(!ChessBoard.whitesMove);
+            ChessBoard.setWhitesTurn(ChessBoard.whitesMove);
             ChessBoard.activeGame.getLegalMoves();
             moveIsLegal = ChessBoard.makeMove(...premove.move, premove.promotionPiece, true);
             ChessElements.setSquareState(premove.move[0], premove.move[1], "premove", false);
             ChessElements.setSquareState(premove.move[2], premove.move[3], "premove", false);
         } else {
             // Generate initial moves for second player
-            ChessBoard.activeGame.getLegalPremoves(!ChessBoard.whitesMove);
-            if (ChessBoard.activeGame.premoves.length === 0) {
-                if (ChessBoard.activeGame.inCheck()) {
-                    ChessBoard.gameOver = "checkmate";
-                } else {
-                    ChessBoard.gameOver = "stalemate";
-                }
-            }
+            ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
+            ChessBoard.updateTurnMessage();
         }
 
         // Highlight illegal move
         if (!moveIsLegal) {
-            ChessBoard.gameOver = "illegal move";
             ChessElements.setSquareState(premove.move[0], premove.move[1], "illegal-piece", true);
             ChessElements.setSquareState(premove.move[2], premove.move[3], "illegal-move", true);
         }
@@ -170,16 +205,12 @@ class ChessBoard {
             ChessElements.setSquareState(toCol, toRow, "premove", true);
         }
 
-        // Update last premove
-        ChessBoard.lastPremove = { move:[fromCol, fromRow, toCol, toRow], promotionPiece };
-        ChessBoard.whitesMove = !ChessBoard.whitesMove;
-
         if (!ChessActions.isSoloGame) {
             ChessActions.opponentsTurn = !ChessActions.opponentsTurn;
         }
 
-        // Update text
-        ChessBoard.updateGameOver();
+        // Update last premove
+        ChessBoard.lastPremove = { move:[fromCol, fromRow, toCol, toRow], promotionPiece };
 
         return moveIsLegal;
     }
@@ -252,29 +283,41 @@ class ChessBoard {
         Array.from(captureTiles).forEach(e => e.classList.remove("oc"));
     }
 
-    static updateGameOver() {
-        const turnText = document.getElementById("turn-text");
+    static updateTurnMessage() {
+        if (ChessBoard.gameOver) return;
+
+        const boardMsg = document.getElementById("board-message");
 
         if (ChessActions.isSoloGame) {
-            turnText.innerHTML = ChessBoard.whitesMove ? "White's Turn" : "Black's Turn";
+            boardMsg.innerHTML = ChessBoard.whitesMove ? "White's Turn" : "Black's Turn";
         } else {
             if (ChessActions.opponentsTurn) {
-                turnText.innerHTML = "Opponents Turn";
+                boardMsg.innerHTML = "Opponents Turn";
             } else {
-                turnText.innerHTML = "Your Turn";
+                boardMsg.innerHTML = "Your Turn";
             }
         }
+    }
+
+    static updateGameOverMessage() {
+        const boardMsg = document.getElementById("board-message");
 
         if (ChessBoard.gameOver) {
             switch (ChessBoard.gameOver) {
                 case "checkmate":
-                    turnText.textContent = "Checkmate - " + (ChessBoard.whitesMove ? "White" : "Black") + " wins!";
+                    boardMsg.textContent = "Checkmate - " + (ChessBoard.whiteWins ? "White" : "Black") + " Wins!";
                     break;
                 case "stalemate":
-                    turnText.textContent = "Stalemate";
+                    boardMsg.textContent = "Stalemate";
+                    break;
+                case "insufficient":
+                    boardMsg.textContent = "Insufficient Material";
+                    break;
+                case "threefold":
+                    boardMsg.textContent = "Threefold Repetition";
                     break;
                 case "illegal move":
-                    turnText.textContent = "Illegal move - " + (ChessBoard.whitesMove ? "Black" : "White") + " wins!";
+                    boardMsg.textContent = "Illegal Move - " + (ChessBoard.whiteWins ? "White" : "Black") + " Wins!";
                     break;
             }
         }

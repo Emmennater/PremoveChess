@@ -45,7 +45,7 @@
     <!-- Board -->
     <div class="board-wrapper">
         <div class="board" id="board" draggable="false"></div>
-        <div class="turn-text" id="turn-text">White's Turn</div>
+        <div class="board-message" id="board-message">White's Turn</div>
     </div>
 
     <!-- Picked up piece -->
@@ -117,7 +117,7 @@
                 </hbox>
                 <label for="host-fen">Fen</label>
                 <hbox>
-                    <input id="host-fen" type="text" value="8/8/pppppppp/rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR/PPPPPPPP/8/8">
+                    <input id="host-fen" type="text">
                 </hbox>
                 <label for="sides">Side</label>
                 <select id="host-side" name="sides" id="sides">
@@ -142,6 +142,7 @@
     <script src="Source/Model/game.js"></script>
     <script src="Source/Model/premove.js"></script>
     <script src="Source/Model/peer.js"></script>
+    <script src="Source/Model/audio.js"></script>
     <script src="Source/View/elements.js"></script>
     <script src="Source/View/interface.js"></script>
     <script src="Source/View/notif.js"></script>

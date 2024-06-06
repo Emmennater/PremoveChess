@@ -11,10 +11,7 @@ class Notification {
     }
 
     static show(html, duration = 5, sound = true) {
-        if (sound) {
-            const audio = new Audio("Assets/notify.mp3");
-            audio.play();
-        }
+        if (sound) playSound("Assets/notify.mp3");
 
         const notification = document.createElement('div');
         notification.classList.add('notification');

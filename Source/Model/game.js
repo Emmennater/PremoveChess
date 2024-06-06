@@ -71,7 +71,6 @@ class ChessGame {
 
     getEndgameState() {
         if (!this.chess.isGameOver()) return false;
-        if (this.chess.isDraw()) return "draw";
         else if (this.chess.isCheckmate()) return "checkmate";
         else if (this.chess.isInsufficientMaterial()) return "insufficient";
         else if (this.chess.isStalemate()) return "stalemate";

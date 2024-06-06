@@ -159,7 +159,7 @@ class MenuEvents {
         this.gameHasStarted();
 
         // New game sound effect
-        playSound("assets/game-start.mp3");
+        playSound("Assets/game-start.mp3");
 
         // Initialize new game
         ChessBoard.resetBoard(fenString);
