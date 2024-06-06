@@ -358,7 +358,9 @@ class ChessBoard {
             }
 
             // Game over
-            if (ChessBoard.gameOver && ChessNetwork.isRunning) MenuEvents.askForRematch();
+            if (ChessBoard.gameOver && ChessNetwork.isRunning && ChessBoard.gameOver !== "opponent left") {
+                MenuEvents.askForRematch();
+            }
         }
     }
 }
