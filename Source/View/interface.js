@@ -21,6 +21,11 @@ class MenuEvents {
         const copyHostID = document.getElementById("copy-host-id");
         setCopyButton(copyHostID, hostID);
 
+        // Set host link copy to clipboard
+        const hostLink = document.getElementById("host-link");
+        const copyHostLink = document.getElementById("copy-host-link");
+        setCopyButton(copyHostLink, hostLink);
+
         // Disable quit game button
         MenuEvents.disableButton("quit-button");
 
@@ -41,9 +46,20 @@ class MenuEvents {
         }
 
         // Window closed
-        window.addEventListener("unload", () => {
+        window.addEventListener("beforeunload", () => {
             if (ChessNetwork.isRunning) ChessNetwork.send(ChessNetwork.recipientID, "leave");
         });
+
+        MenuEvents.openMainMenu();
+
+        // Check search params for host id
+        const params = getSearchParameters();
+        if (params.id) {
+            MenuEvents.openJoinMenu();
+        }
+
+        // Set server status to online
+        MenuEvents.serverIsOnline();
     }
 
     // Open and close menus
@@ -105,6 +121,13 @@ class MenuEvents {
         ChessBoard.resetBoard(defaultFen);
         Network.close();
 
+        setTimeout(() => {
+            if (getSearchParameters().id) {
+                // Remove host id from search params
+                window.location.href = getWindowUrl();
+            }
+        }, 1000);
+
         // Disable quit game button
         MenuEvents.disableButton("quit-button");
 
@@ -138,13 +161,15 @@ class MenuEvents {
     static openJoinMenu() {
         this.openMenu("join");
 
+        const params = getSearchParameters();
+
         // Abort any original join request
         ChessNetwork.abortJoin();
 
         // Reset settings
         const joinID = document.getElementById("join-id");
         const loadingIcon = document.getElementById("join-loading");
-        joinID.value = "";
+        joinID.value = params.id ? params.id : "";
         joinID.classList.remove("error-flag");
         loadingIcon.classList.add("hide");
         MenuEvents.disableButton("join-game-button");
@@ -166,20 +191,25 @@ class MenuEvents {
         // const sideInput = document.getElementById("host-side");
         // sideInput.value = MenuSettings.get("host-side");
         const hostID = document.getElementById("host-id");
+        const hostLink = document.getElementById("host-link");
         const fenInput = document.getElementById("host-fen");
         hostID.value = "";
+        hostLink.value = "";
         fenInput.value = defaultFen;
         hostID.classList.remove("error-flag");
         MenuEvents.disableButton("host-game-button");
         MenuEvents.disableButton("copy-host-id");
+        MenuEvents.disableButton("copy-host-link");
 
         // Setup network
         Network.close();
 
         Network.on("open", id => {
             hostID.value = id;
+            hostLink.value = getWindowUrl() + "?id=" + hostID.value;
             MenuEvents.enableButton("host-game-button");
             MenuEvents.enableButton("copy-host-id");
+            MenuEvents.enableButton("copy-host-link");
         });
 
         Network.open();
@@ -235,7 +265,7 @@ class MenuEvents {
             } else {
                 hostID.classList.remove("error-flag");
             }
-    
+
             this.gameHasStarted();
 
             // Close menus

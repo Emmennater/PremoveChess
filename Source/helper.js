@@ -76,3 +76,20 @@ function isMobileDevice() {
     const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
     return mobileRegex.test(navigator.userAgent);
 }
+
+function getWindowUrl() {
+    return window.location.origin + window.location.pathname;
+}
+
+function getSearchParameters() {
+    const parameters = {};
+
+    const query = window.location.search.substring(1);
+    const parametersArray = query.split("&");
+    for (const parameter of parametersArray) {
+        const pair = parameter.split("=");
+        parameters[pair[0]] = pair[1];
+    }
+
+    return parameters;
+}
