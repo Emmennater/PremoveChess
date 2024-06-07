@@ -288,7 +288,7 @@ class MenuEvents {
     static askForRematch() {
         const rematchNotif = Notification.ask("Rematch?", accepted => {
             ChessNetwork.voteRematch(accepted);
-        });
+        }, isMobileDevice() ? "bottom" : "top");
 
         MenuEvents.rematchNotification = rematchNotif;
     }

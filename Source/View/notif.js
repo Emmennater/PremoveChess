@@ -5,22 +5,28 @@ class Notification {
     static updateNotificationPositions() {
         const existingNotifications = document.querySelectorAll('.notification');
         const notificationGap = 10; // Adjust as needed
-        let y = isMobileDevice() ? 40 : 0;
+        
+        const locations = {
+            "top": isMobileDevice() ? 40 : 0,
+            "bottom": 5
+        };
 
         for (let i = 0; i < existingNotifications.length; i++) {
             const existingNotification = existingNotifications[i];
-            existingNotification.style.top = `${y}px`;
-            y += existingNotification.getBoundingClientRect().height + notificationGap;
+            const loc = existingNotification.location;
+            existingNotification.style[loc] = `${locations[loc]}px`;
+            locations[loc] += existingNotification.getBoundingClientRect().height + notificationGap;
         }
     }
 
-    static show(html, duration = 5, sound = true) {
+    static show(html, duration = 5, sound = true, location = "top") {
         if (sound) playSound("Assets/notify.mp3");
 
         const notification = document.createElement('div');
         notification.classList.add('notification');
         notification.style.setProperty('--notification-duration', `${duration}s`);
         notification.innerHTML = html;
+        notification.location = location;
         document.body.appendChild(notification);
 
         Notification.updateNotificationPositions();
@@ -40,8 +46,8 @@ class Notification {
         return notification;
     }
 
-    static ask(question, callback) {
-        const notification = Notification.show("", Infinity, true);
+    static ask(question, callback, location = "top") {
+        const notification = Notification.show("", Infinity, true, location);
         const message = document.createElement("p");
 
         const yesButton = document.createElement("button");
