@@ -361,6 +361,9 @@ class MenuSettings {
         MenuSettings.addSetting("board-style", "https://lichess1.org/assets/images/board/grey.jpg", "board-style", value => {
             ChessElements.setBackgroundImage(value);
         });
+        MenuSettings.addSetting("move-confirmation", false, "move-confirmation", value => {
+            ChessActions.moveConfirmation = value;
+        });
     }
 
     static addSetting(key, value, elemId = null, callback = () => {}) {

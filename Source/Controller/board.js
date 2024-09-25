@@ -240,6 +240,7 @@ class ChessBoard {
     }
 
     static isLegalPremove(fromCol, fromRow, toCol, toRow, promotionPiece) {
+        if (promotionPiece) promotionPiece = promotionPiece.toLowerCase();
         ChessBoard.activeGame.getLegalMoves();
         const move = ChessBoard.activeGame.findMove(fromCol, fromRow, toCol, toRow, promotionPiece);
         return move ? true : false;

@@ -11,6 +11,7 @@ class ChessActions {
     static isSoloGame = true;
     static gameOver = false;
     static showSoloPremoves = true;
+    static moveConfirmation = false;
 
     static doIgnoreInput() {
         return ChessBoard.pieceAnimating || PromotionGUI.isPromoting;
@@ -138,6 +139,20 @@ class ChessActions {
         return false;
     }
 
+    static confirmMove(fromCol, fromRow, toCol, toRow, promotionPiece, callback) {
+        // Indicate move being confirmed
+        ChessElements.setSquareState(fromCol, fromRow, "premove", true);
+        ChessElements.setSquareState(toCol, toRow, "premove", true);
+        
+        Notification.ask("Confirm move?", confirmed => {
+            // Revert premove style changes
+            ChessElements.setSquareState(fromCol, fromRow, "premove", false);
+            ChessElements.setSquareState(toCol, toRow, "premove", false);
+
+            callback(confirmed);
+        });
+    }
+
     static moveMade(fromCol, fromRow, toCol, toRow, animate) {
         const move = ChessBoard.activeGame.findPremove(fromCol, fromRow, toCol, toRow);
 
@@ -151,10 +166,22 @@ class ChessActions {
             }
         };
 
+        const confirmAndMakeMove = promotionPiece => {
+            if (ChessActions.moveConfirmation) {
+                ChessActions.confirmMove(fromCol, fromRow, toCol, toRow, promotionPiece, accepted => {
+                    if (accepted) {
+                        makeMove(promotionPiece);
+                    }
+                })
+            } else {
+                makeMove(promotionPiece);
+            }
+        };
+
         if (move.isPromotion) {
-            PromotionGUI.requestPromotion(toCol, toRow, ChessBoard.whitesMove, makeMove);
+            PromotionGUI.requestPromotion(toCol, toRow, ChessBoard.whitesMove, confirmAndMakeMove);
         } else {
-            makeMove(null);
+            confirmAndMakeMove(null);
         }
     }
 
