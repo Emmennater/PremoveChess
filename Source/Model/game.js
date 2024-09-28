@@ -69,6 +69,11 @@ class ChessGame {
         return { b: [blackKingCol, blackKingRow], w: [whiteKingCol, whiteKingRow] };
     }
 
+    getRookStarts() {
+        const rooks = this.chess.getRooks();
+        return rooks;
+    }
+
     getEndgameState() {
         if (!this.chess.isGameOver()) return false;
         else if (this.chess.isCheckmate()) return "checkmate";
@@ -106,11 +111,15 @@ class ChessGame {
         return moves;
     }
 
-    findMove(fromCol, fromRow, toCol, toRow, promotionPiece = null) {
+    findMove(moveData) {
+        const promotionPiece = moveData.promotionPiece ? moveData.promotionPiece.toLowerCase() : null;
+        const castleSan = moveData.castle;
+
         for (let move of this.moves) {
-            if (fromCol == move.move[0] && fromRow == move.move[1] &&
-                toCol == move.move[2] && toRow == move.move[3] &&
-                (!promotionPiece || move.promotion == promotionPiece)) {
+            if (moveData.move[0] == move.move[0] && moveData.move[1] == move.move[1] &&
+                moveData.move[2] == move.move[2] && moveData.move[3] == move.move[3] &&
+                (!promotionPiece || move.promotion == promotionPiece) ||
+                (castleSan && move.san == castleSan)) {
                 return move;
             }
         }
@@ -122,8 +131,7 @@ class ChessGame {
         return this.findMove(fromCol, fromRow, toCol, toRow) !== null;
     }
 
-    makeMove(fromCol, fromRow, toCol, toRow, promotionPiece = null) {
-        const move = this.findMove(fromCol, fromRow, toCol, toRow, promotionPiece);
+    makeMove(move) {
         if (!move) return false;
         this.chess.move(move.san);
         return move;

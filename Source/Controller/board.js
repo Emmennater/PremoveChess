@@ -43,11 +43,16 @@ class ChessBoard {
         const fromPos = fromSquare.getBoundingClientRect();
         const toPos = toSquare.getBoundingClientRect();
         const fromPiece = fromSquare.children[0];
+        const imgBefore = ChessElements.getPieceImage(fromCol, fromRow);
 
         const complete = () => {
             // Move the piece
-            ChessElements.setPieceImage(toCol, toRow, ChessElements.getPieceImage(fromCol, fromRow));
-            ChessElements.setPieceImage(fromCol, fromRow, "");
+            const imgNow = ChessElements.getPieceImage(fromCol, fromRow);
+            ChessElements.setPieceImage(toCol, toRow, imgBefore);
+
+            if (imgNow === imgBefore) {
+                ChessElements.setPieceImage(fromCol, fromRow, "");
+            }
             
             // Reset transformations
             fromPiece.style.position = "";
@@ -77,7 +82,7 @@ class ChessBoard {
         setTimeout(complete, ChessBoard.animationDelay * 1000);
     }
 
-    static moveUpdateGUI(move, animate, promotionPiece, callback) {
+    static moveUpdateGUI(move, animate, callback) {
         const game = ChessBoard.activeGame;
         const gridCols = ChessElements.gridCols;
         const fromCol = move.move[0];
@@ -86,7 +91,10 @@ class ChessBoard {
         const toRow = move.move[3];
         const toPiece = game.getPieceAt(toCol, toRow);
         const whiteMoved = game.isWhitesTurn();
+        const us = whiteMoved ? "w" : "b";
         const kings = game.getKings();
+        const rooks = game.getRookStarts();
+        const promotionPiece = move.promotion ? whiteMoved ? move.promotion.toUpperCase() : move.promotion : null;
 
         // Move the piece
         ChessBoard.movePiece(fromCol, fromRow, toCol, toRow, animate);
@@ -94,13 +102,14 @@ class ChessBoard {
         // King side castling
         if (move.san === "O-O") {
             const row = whiteMoved ? gridCols - 1 : 0;
-            ChessBoard.movePiece(gridCols - 1, row, gridCols - 3, row, animate);
+            ChessBoard.movePiece(rooks[us][1].col, row, gridCols - 3, row, animate);
         }
-
+        
         // Queen side castling
         if (move.san === "O-O-O") {
+            // console.log(move);
             const row = whiteMoved ? gridCols - 1 : 0;
-            ChessBoard.movePiece(0, row, 3, row, animate);
+            ChessBoard.movePiece(rooks[us][0].col, row, 3, row, animate);
         }
 
         const updateElements = () => {
@@ -122,9 +131,9 @@ class ChessBoard {
         else updateElements();
     }
 
-    static makeMove(fromCol, fromRow, toCol, toRow, promotionPiece, animate = false) {
+    static makeMove(moveData, animate = false) {
         const game = ChessBoard.activeGame;
-        const move = game.findMove(fromCol, fromRow, toCol, toRow);
+        const move = game.findMove(moveData);
         const whitesTurn = game.isWhitesTurn();
 
         if (!move) {
@@ -150,9 +159,8 @@ class ChessBoard {
             playSound("Assets/move-self.mp3");
         }
 
-        ChessBoard.moveUpdateGUI(move, animate, promotionPiece, () => {
-            const type = promotionPiece ? promotionPiece.toLowerCase() : null;
-            game.makeMove(fromCol, fromRow, toCol, toRow, type);
+        ChessBoard.moveUpdateGUI(move, animate, () => {
+            game.makeMove(move);
             game.getLegalPremoves(whitesTurn);
             ChessBoard.highlightChecks();
 
@@ -174,9 +182,9 @@ class ChessBoard {
         return true;
     }
 
-    static makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, show = false, sound = true) {
+    static makePremove(move, show = false, sound = true) {
         const premove = ChessBoard.lastPremove;
-        const nextPremove = { move: [fromCol, fromRow, toCol, toRow], promotionPiece };
+        const nextPremove = move;
         let moveIsLegal = true;
 
         // Change turn
@@ -192,8 +200,8 @@ class ChessBoard {
         // Play last premove
         if (premove) {
             ChessBoard.setWhitesTurn(ChessBoard.whitesMove);
-            ChessBoard.activeGame.getLegalMoves();
-            moveIsLegal = ChessBoard.makeMove(...premove.move, premove.promotionPiece, true);
+            // ChessBoard.activeGame.getLegalMoves();
+            moveIsLegal = ChessBoard.makeMove(premove, true);
             ChessElements.setSquareState(premove.move[0], premove.move[1], "premove", false);
             ChessElements.setSquareState(premove.move[2], premove.move[3], "premove", false);
         } else {
@@ -214,8 +222,8 @@ class ChessBoard {
 
         // Highlight premove
         if (show) {
-            ChessElements.setSquareState(fromCol, fromRow, "premove", true);
-            ChessElements.setSquareState(toCol, toRow, "premove", true);
+            ChessElements.setSquareState(nextPremove.move[0], nextPremove.move[1], "premove", true);
+            ChessElements.setSquareState(nextPremove.move[2], nextPremove.move[3], "premove", true);
         }
 
         return moveIsLegal;
@@ -226,7 +234,7 @@ class ChessBoard {
         if (ChessBoard.gameOver) return;
         
         const premove = ChessBoard.lastPremove;
-        if (!ChessBoard.isLegalPremove(premove.move[0], premove.move[1], premove.move[2], premove.move[3], premove.promotionPiece)) {
+        if (!ChessBoard.isLegalPremove(premove)) {
             // Premature game over
             ChessBoard.gameOver = "illegal move";
             ChessBoard.whiteWins = ChessBoard.whitesMove;
@@ -239,10 +247,11 @@ class ChessBoard {
         }
     }
 
-    static isLegalPremove(fromCol, fromRow, toCol, toRow, promotionPiece) {
+    static isLegalPremove(moveData) {
+        let promotionPiece = moveData.promotionPiece;
         if (promotionPiece) promotionPiece = promotionPiece.toLowerCase();
         ChessBoard.activeGame.getLegalMoves();
-        const move = ChessBoard.activeGame.findMove(fromCol, fromRow, toCol, toRow, promotionPiece);
+        const move = ChessBoard.activeGame.findMove(moveData);
         return move ? true : false;
     }
 

@@ -112,13 +112,13 @@ const BITS = {
 // prettier-ignore
 // eslint-disable-next-line
 const Ox88 = {
-    a8: 0, b8: 1, c8: 2, d8: 3, e8: 4, f8: 5, g8: 6, h8: 7,
-    a7: 16, b7: 17, c7: 18, d7: 19, e7: 20, f7: 21, g7: 22, h7: 23,
-    a6: 32, b6: 33, c6: 34, d6: 35, e6: 36, f6: 37, g6: 38, h6: 39,
-    a5: 48, b5: 49, c5: 50, d5: 51, e5: 52, f5: 53, g5: 54, h5: 55,
-    a4: 64, b4: 65, c4: 66, d4: 67, e4: 68, f4: 69, g4: 70, h4: 71,
-    a3: 80, b3: 81, c3: 82, d3: 83, e3: 84, f3: 85, g3: 86, h3: 87,
-    a2: 96, b2: 97, c2: 98, d2: 99, e2: 100, f2: 101, g2: 102, h2: 103,
+    a8: 0,   b8: 1,   c8: 2,   d8: 3,   e8: 4,   f8: 5,   g8: 6,   h8: 7,
+    a7: 16,  b7: 17,  c7: 18,  d7: 19,  e7: 20,  f7: 21,  g7: 22,  h7: 23,
+    a6: 32,  b6: 33,  c6: 34,  d6: 35,  e6: 36,  f6: 37,  g6: 38,  h6: 39,
+    a5: 48,  b5: 49,  c5: 50,  d5: 51,  e5: 52,  f5: 53,  g5: 54,  h5: 55,
+    a4: 64,  b4: 65,  c4: 66,  d4: 67,  e4: 68,  f4: 69,  g4: 70,  h4: 71,
+    a3: 80,  b3: 81,  c3: 82,  d3: 83,  e3: 84,  f3: 85,  g3: 86,  h3: 87,
+    a2: 96,  b2: 97,  c2: 98,  d2: 99,  e2: 100, f2: 101, g2: 102, h2: 103,
     a1: 112, b1: 113, c1: 114, d1: 115, e1: 116, f1: 117, g1: 118, h1: 119
 };
 const PAWN_OFFSETS = {
@@ -442,6 +442,18 @@ class Chess {
     constructor(fen = exports.DEFAULT_POSITION) {
         this.load(fen);
     }
+    getRooks() {
+        return {
+            w: [
+                { row: rank(ROOKS.w[0].square), col: file(ROOKS.w[0].square) },
+                { row: rank(ROOKS.w[1].square), col: file(ROOKS.w[1].square) }
+            ],
+            b: [
+                { row: rank(ROOKS.b[0].square), col: file(ROOKS.b[0].square) },
+                { row: rank(ROOKS.b[1].square), col: file(ROOKS.b[1].square) }
+            ]
+        };
+    }
     clear({ preserveHeaders = false } = {}) {
         this._board = new Array(128);
         this._kings = { w: EMPTY, b: EMPTY };
@@ -660,6 +672,19 @@ class Chess {
         if (type === exports.KING) {
             this._kings[color] = sq;
         }
+
+        // update rook positions
+        if (type === exports.ROOK) {
+            const passedKing = this._kings[color] != -1;
+            if (passedKing) {
+                // must be the right rook
+                ROOKS[color][1] = { square: sq, flags: BITS.KSIDE_CASTLE };
+            } else {
+                // must be the left rook
+                ROOKS[color][0] = { square: sq, flags: BITS.QSIDE_CASTLE };
+            }
+        }
+
         return true;
     }
     remove(square) {
@@ -961,33 +986,85 @@ class Chess {
                 // king-side castling
                 if (this._castling[us] & BITS.KSIDE_CASTLE) {
                     const castlingFrom = this._kings[us];
-                    const castlingTo = castlingFrom + 2;
-                    if (!this._board[castlingFrom + 1] &&
-                        !this._board[castlingTo] &&
-                        !this._attacked(them, this._kings[us]) &&
-                        !this._attacked(them, castlingFrom + 1) &&
-                        !this._attacked(them, castlingTo)) {
+                    const castlingTo = us === exports.WHITE ? Ox88.g1 : Ox88.g8;
+                    let flag = true;
+
+                    // check attacks
+                    for (let i = castlingFrom; i <= castlingTo; i++) {
+                        if (this._attacked(them, i)) {
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    // check occupancy
+                    for (let i = castlingFrom + 1; (i & 0x88) == 0; i++) {
+                        if (this._board[i] && this._board[i].type == exports.ROOK && this._board[i].color == us) {
+                            break;
+                        } else {
+                            if (this._board[i]) {
+                                flag = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (flag) {
                         addMove(moves, us, this._kings[us], castlingTo, exports.KING, undefined, BITS.KSIDE_CASTLE);
                     }
+
+                    // if (!this._board[castlingFrom + 1] &&
+                    //     !this._board[castlingTo] &&
+                    //     !this._attacked(them, this._kings[us]) &&
+                    //     !this._attacked(them, castlingFrom + 1) &&
+                    //     !this._attacked(them, castlingTo)) {
+                    //     addMove(moves, us, this._kings[us], castlingTo, exports.KING, undefined, BITS.KSIDE_CASTLE);
+                    // }
                 }
                 // queen-side castling
                 if (this._castling[us] & BITS.QSIDE_CASTLE) {
                     const castlingFrom = this._kings[us];
-                    const castlingTo = castlingFrom - 2;
-                    if (!this._board[castlingFrom - 1] &&
-                        !this._board[castlingFrom - 2] &&
-                        !this._board[castlingFrom - 3] &&
-                        !this._attacked(them, this._kings[us]) &&
-                        !this._attacked(them, castlingFrom - 1) &&
-                        !this._attacked(them, castlingTo)) {
+                    const castlingTo = us === exports.WHITE ? Ox88.c1 : Ox88.c8;
+                    let flag = true;
+                    
+                    // check attacks
+                    for (let i = castlingFrom; i >= castlingTo; i--) {
+                        if (this._attacked(them, i)) {
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    // check occupancy
+                    for (let i = castlingFrom - 1; (i & 0x88) == 0; i--) {
+                        if (i == ROOKS[us][0].square) {
+                            break;
+                        } else {
+                            if (this._board[i]) {
+                                flag = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (flag) {
                         addMove(moves, us, this._kings[us], castlingTo, exports.KING, undefined, BITS.QSIDE_CASTLE);
                     }
+                    
+                    // if (!this._board[castlingFrom - 1] &&
+                    //     !this._board[castlingFrom - 2] &&
+                    //     !this._board[castlingFrom - 3] &&
+                    //     !this._attacked(them, this._kings[us]) &&
+                    //     !this._attacked(them, castlingFrom - 1) &&
+                    //     !this._attacked(them, castlingTo)) {
+                    //     addMove(moves, us, this._kings[us], castlingTo, exports.KING, undefined, BITS.QSIDE_CASTLE);
+                    // }
                 }
             }
         }
         /*
-         * return all pseudo-legal moves (this includes moves that allow the king
-         * to be captured)
+        * return all pseudo-legal moves (this includes moves that allow the king
+        * to be captured)
          */
         if (!legal || this._kings[us] === -1) {
             return moves;
@@ -1063,11 +1140,55 @@ class Chess {
         });
     }
     _makeMove(move) {
+        const bd = this.ascii();
         const us = this._turn;
         const them = swapColor(us);
         this._push(move);
-        this._board[move.to] = this._board[move.from];
-        delete this._board[move.from];
+        
+        // if we castled, move the rook next to the king
+        if (move.flags & BITS.KSIDE_CASTLE) {
+            const uncastledRookPos = ROOKS[us][1].square;
+            const castledRookPos = move.to - 1;
+            const uncastledKingPos = move.from;
+            const castledKingPos = move.to;
+            const rook = this._board[uncastledRookPos];
+            const king = this._board[uncastledKingPos];
+            
+            // move king and rook back to their original squares
+            delete this._board[uncastledRookPos];
+            delete this._board[uncastledKingPos];
+            this._board[castledRookPos] = rook;
+            this._board[castledKingPos] = king;
+
+            // const castlingTo = move.to - 1;
+            // const castlingFrom = move.to + 1;
+            // const castlingFrom = ROOKS[us][1].square;
+            // this._board[castlingTo] = this._board[castlingFrom];
+            // delete this._board[castlingFrom];
+        } else if (move.flags & BITS.QSIDE_CASTLE) {
+            const uncastledRookPos = ROOKS[us][0].square;
+            const castledRookPos = move.to + 1;
+            const uncastledKingPos = move.from;
+            const castledKingPos = move.to;
+            const rook = this._board[uncastledRookPos];
+            const king = this._board[uncastledKingPos];
+
+            // move king and rook back to their original squares
+            delete this._board[uncastledRookPos];
+            delete this._board[uncastledKingPos];
+            this._board[castledRookPos] = rook;
+            this._board[castledKingPos] = king;
+
+            // const castlingTo = move.to + 1;
+            // const castlingFrom = move.to - 2;
+            // const castlingFrom = ROOKS[us][0].square;
+            // this._board[castlingTo] = this._board[castlingFrom];
+            // delete this._board[castlingFrom];
+        } else {
+            this._board[move.to] = this._board[move.from];
+            delete this._board[move.from];
+        }
+        
         // if ep capture, remove the captured pawn
         if (move.flags & BITS.EP_CAPTURE) {
             if (this._turn === exports.BLACK) {
@@ -1081,25 +1202,15 @@ class Chess {
         if (move.promotion) {
             this._board[move.to] = { type: move.promotion, color: us };
         }
+
         // if we moved the king
         if (this._board[move.to].type === exports.KING) {
             this._kings[us] = move.to;
-            // if we castled, move the rook next to the king
-            if (move.flags & BITS.KSIDE_CASTLE) {
-                const castlingTo = move.to - 1;
-                const castlingFrom = move.to + 1;
-                this._board[castlingTo] = this._board[castlingFrom];
-                delete this._board[castlingFrom];
-            }
-            else if (move.flags & BITS.QSIDE_CASTLE) {
-                const castlingTo = move.to + 1;
-                const castlingFrom = move.to - 2;
-                this._board[castlingTo] = this._board[castlingFrom];
-                delete this._board[castlingFrom];
-            }
+            
             // turn off castling
             this._castling[us] = 0;
         }
+
         // turn off castling if we move a rook
         if (this._castling[us]) {
             for (let i = 0, len = ROOKS[us].length; i < len; i++) {
@@ -1161,7 +1272,13 @@ class Chess {
         if (old === undefined) {
             return null;
         }
+
         const move = old.move;
+        
+        // if (move.flags & (BITS.KSIDE_CASTLE | BITS.QSIDE_CASTLE)) {
+        //     console.log("before", this.ascii());
+        // }
+
         this._kings = old.kings;
         this._turn = old.turn;
         this._castling = old.castling;
@@ -1170,9 +1287,55 @@ class Chess {
         this._moveNumber = old.moveNumber;
         const us = this._turn;
         const them = swapColor(us);
-        this._board[move.from] = this._board[move.to];
-        this._board[move.from].type = move.piece; // to undo any promotions
-        delete this._board[move.to];
+        
+        // undo castling
+        if (move.flags & (BITS.KSIDE_CASTLE | BITS.QSIDE_CASTLE)) {
+            // let castlingTo, castlingFrom;
+            if (move.flags & BITS.KSIDE_CASTLE) {
+                const uncastledRookPos = ROOKS[us][1].square;
+                const castledRookPos = move.to - 1;
+                const uncastledKingPos = move.from;
+                const castledKingPos = move.to;
+                const rook = this._board[castledRookPos];
+                const king = this._board[castledKingPos];
+                
+                // move king and rook back to their original squares
+                delete this._board[castledRookPos];
+                delete this._board[castledKingPos];
+                this._board[uncastledRookPos] = rook;
+                this._board[uncastledKingPos] = king;
+
+                // castlingTo = move.to + 1;
+                // castlingTo = ROOKS[us][1].square;
+                // castlingFrom = move.to - 1;
+            }
+            else {
+                const uncastledRookPos = ROOKS[us][0].square;
+                const castledRookPos = move.to + 1;
+                const uncastledKingPos = move.from;
+                const castledKingPos = move.to;
+                const rook = this._board[castledRookPos];
+                const king = this._board[castledKingPos];
+                
+                // move king and rook back to their original squares
+                delete this._board[castledRookPos];
+                delete this._board[castledKingPos];
+                this._board[uncastledRookPos] = rook;
+                this._board[uncastledKingPos] = king;
+
+                // castlingTo = move.to - 2;
+                // castlingTo = ROOKS[us][0].square;
+                // castlingFrom = move.to + 1;
+            }
+            // this._board[castlingTo] = this._board[castlingFrom];
+            // delete this._board[castlingFrom];
+        } else {
+            this._board[move.from] = this._board[move.to];
+            this._board[move.from].type = move.piece; // to undo any promotions
+            delete this._board[move.to];
+        }
+
+
         if (move.captured) {
             if (move.flags & BITS.EP_CAPTURE) {
                 // en passant capture
@@ -1190,19 +1353,11 @@ class Chess {
                 this._board[move.to] = { type: move.captured, color: them };
             }
         }
-        if (move.flags & (BITS.KSIDE_CASTLE | BITS.QSIDE_CASTLE)) {
-            let castlingTo, castlingFrom;
-            if (move.flags & BITS.KSIDE_CASTLE) {
-                castlingTo = move.to + 1;
-                castlingFrom = move.to - 1;
-            }
-            else {
-                castlingTo = move.to - 2;
-                castlingFrom = move.to + 1;
-            }
-            this._board[castlingTo] = this._board[castlingFrom];
-            delete this._board[castlingFrom];
-        }
+
+        // if (move.flags & (BITS.KSIDE_CASTLE | BITS.QSIDE_CASTLE)) {
+        //     console.log("after", this.ascii());
+        // }
+
         return move;
     }
     pgn({ newline = '\n', maxWidth = 0, } = {}) {

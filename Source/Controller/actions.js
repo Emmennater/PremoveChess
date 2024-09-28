@@ -139,7 +139,7 @@ class ChessActions {
         return false;
     }
 
-    static confirmMove(fromCol, fromRow, toCol, toRow, promotionPiece, callback) {
+    static confirmMove(fromCol, fromRow, toCol, toRow, callback) {
         // Indicate move being confirmed
         ChessElements.setSquareState(fromCol, fromRow, "premove", true);
         ChessElements.setSquareState(toCol, toRow, "premove", true);
@@ -157,8 +157,10 @@ class ChessActions {
         const move = ChessBoard.activeGame.findPremove(fromCol, fromRow, toCol, toRow);
 
         const makeMove = promotionPiece => {
+            move.promotionPiece = promotionPiece;
+
             const showPremove = !ChessActions.isSoloGame || ChessActions.showSoloPremoves;
-            const success = ChessBoard.makePremove(fromCol, fromRow, toCol, toRow, promotionPiece, showPremove);
+            const success = ChessBoard.makePremove(move, showPremove);
 
             // Relay move to opponent if not solo
             if (!ChessActions.isSoloGame) {
@@ -168,7 +170,7 @@ class ChessActions {
 
         const confirmAndMakeMove = promotionPiece => {
             if (ChessActions.moveConfirmation) {
-                ChessActions.confirmMove(fromCol, fromRow, toCol, toRow, promotionPiece, accepted => {
+                ChessActions.confirmMove(fromCol, fromRow, toCol, toRow, accepted => {
                     if (accepted) {
                         makeMove(promotionPiece);
                     }
