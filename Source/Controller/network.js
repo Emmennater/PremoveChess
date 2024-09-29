@@ -103,7 +103,9 @@ class ChessNetwork {
             if (parts[0] === "move") {
                 const move = [parseInt(parts[1], 10), parseInt(parts[2], 10), parseInt(parts[3], 10), parseInt(parts[4], 10)];
                 const promotionPiece = parts[5] === "null" ? null : parts[5];
-                ChessBoard.makePremove(move[0], move[1], move[2], move[3], promotionPiece, false);
+                const castle = parts[6] === "false" ? false : parts[6];
+                const moveData = { move, promotionPiece, castle };
+                ChessBoard.makePremove(moveData, false);
             }
 
             // Opponent leaving the game
@@ -134,8 +136,15 @@ class ChessNetwork {
         });
     }
 
-    static relayMove(fromCol, fromRow, toCol, toRow, promotionPiece) {
-        const moveData = "move " + fromCol + " " + fromRow + " " + toCol + " " + toRow + " " + promotionPiece;
+    static relayMove(move) {
+        const fromCol = move.move[0];
+        const fromRow = move.move[1];
+        const toCol = move.move[2];
+        const toRow = move.move[3];
+        const promotionPiece = move.promotionPiece;
+        const castle = move.castle;
+
+        const moveData = "move " + fromCol + " " + fromRow + " " + toCol + " " + toRow + " " + promotionPiece + " " + castle;
         Network.send(this.recipientID, moveData);
     }
 

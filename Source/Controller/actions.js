@@ -158,13 +158,13 @@ class ChessActions {
 
         const makeMove = promotionPiece => {
             move.promotionPiece = promotionPiece;
-
+            console.log(move);
             const showPremove = !ChessActions.isSoloGame || ChessActions.showSoloPremoves;
             const success = ChessBoard.makePremove(move, showPremove);
 
             // Relay move to opponent if not solo
             if (!ChessActions.isSoloGame) {
-                ChessNetwork.relayMove(move.move[0], move.move[1], move.move[2], move.move[3], promotionPiece);
+                ChessNetwork.relayMove(move);
             }
         };
 
