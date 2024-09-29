@@ -35,6 +35,9 @@ class ChessBoard {
     }
 
     static movePiece(fromCol, fromRow, toCol, toRow, animate = false) {
+        // Prevent moving to same square
+        if (fromCol === toCol && fromRow === toRow) return;
+        
         ChessBoard.pieceAnimating++;
 
         const boardRect = ChessElements.getBoardRect();
@@ -107,7 +110,6 @@ class ChessBoard {
         
         // Queen side castling
         if (move.san === "O-O-O") {
-            // console.log(move);
             const row = whiteMoved ? gridCols - 1 : 0;
             ChessBoard.movePiece(rooks[us][0].col, row, 3, row, animate);
         }

@@ -998,14 +998,10 @@ class Chess {
                     }
 
                     // check occupancy
-                    for (let i = castlingFrom + 1; (i & 0x88) == 0; i++) {
-                        if (this._board[i] && this._board[i].type == exports.ROOK && this._board[i].color == us) {
+                    for (let i = castlingFrom + 1; i <= castlingTo; i++) {
+                        if (this._board[i] && !(this._board[i].type == exports.ROOK && this._board[i].color == us)) {
+                            flag = false;
                             break;
-                        } else {
-                            if (this._board[i]) {
-                                flag = false;
-                                break;
-                            }
                         }
                     }
 
@@ -1036,14 +1032,10 @@ class Chess {
                     }
 
                     // check occupancy
-                    for (let i = castlingFrom - 1; (i & 0x88) == 0; i--) {
-                        if (i == ROOKS[us][0].square) {
+                    for (let i = castlingFrom - 1; i >= castlingTo; i--) {
+                        if (this._board[i] && !(this._board[i].type == exports.ROOK && this._board[i].color == us)) {
+                            flag = false;
                             break;
-                        } else {
-                            if (this._board[i]) {
-                                flag = false;
-                                break;
-                            }
                         }
                     }
 
