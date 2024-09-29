@@ -7,6 +7,7 @@ class ChessBoard {
     static whitesMove = true;
     static gameOver = false;
     static whiteWins = false;
+    static premoveNumber = 1;
 
     static setActiveGame(game) {
         ChessBoard.activeGame = game;
@@ -17,13 +18,17 @@ class ChessBoard {
             ChessElements.flipBoard();
         }
         
+        
         ChessBoard.gameOver = false;
         ChessBoard.whiteWins = false;
         ChessBoard.lastPremove = null;
         ChessBoard.activeGame.loadFen(fen);
         ChessBoard.whitesMove = ChessBoard.activeGame.isWhitesTurn();
+        // Reset moves for premove calculation
+        ChessBoard.activeGame.moves = [];
         ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
         ChessBoard.updatePieces(ChessBoard.activeGame);
+        ChessBoard.premoveNumber = 1;
         ChessActions.isSoloGame = isSolo;
         ChessActions.opponentsTurn = opponentsTurn ^ (!ChessBoard.whitesMove && !isSolo);
         ChessElements.resetStates();
@@ -227,6 +232,8 @@ class ChessBoard {
             ChessElements.setSquareState(nextPremove.move[0], nextPremove.move[1], "premove", true);
             ChessElements.setSquareState(nextPremove.move[2], nextPremove.move[3], "premove", true);
         }
+
+        ChessBoard.premoveNumber++;
 
         return moveIsLegal;
     }

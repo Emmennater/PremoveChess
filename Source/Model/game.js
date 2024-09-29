@@ -132,6 +132,7 @@ class ChessGame {
     }
 
     makeMove(move) {
+        // console.log(this.chess.ascii());
         if (!move) return false;
         this.chess.move(move.san);
         return move;
@@ -166,5 +167,9 @@ class ChessGame {
         const endRow = rowToIndex(input.charAt(3));
         
         return [startCol, startRow, endCol, endRow];
+    }
+
+    getMoveNumber() {
+        return this.chess.moveNumber();
     }
 }

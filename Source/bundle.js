@@ -998,7 +998,9 @@ class Chess {
                     }
 
                     // check occupancy
-                    for (let i = castlingFrom + 1; i <= castlingTo; i++) {
+                    const di = Math.sign(castlingTo - castlingFrom) || 1;
+                    const offset = di === -1 ? -1 : 0;
+                    for (let i = castlingFrom + di; i != castlingTo + offset + di; i += di) {
                         if (this._board[i] && !(this._board[i].type == exports.ROOK && this._board[i].color == us)) {
                             flag = false;
                             break;
@@ -1032,7 +1034,9 @@ class Chess {
                     }
 
                     // check occupancy
-                    for (let i = castlingFrom - 1; i >= castlingTo; i--) {
+                    const di = Math.sign(castlingTo - castlingFrom) || 1;
+                    const offset = di === 1 ? 1 : 0;
+                    for (let i = castlingFrom + di; i != castlingTo + offset + di; i += di) {
                         if (this._board[i] && !(this._board[i].type == exports.ROOK && this._board[i].color == us)) {
                             flag = false;
                             break;
@@ -1196,6 +1200,9 @@ class Chess {
         }
 
         // if we moved the king
+        if (!this._board[move.to]) {
+            console.log(bd);
+        }
         if (this._board[move.to].type === exports.KING) {
             this._kings[us] = move.to;
             

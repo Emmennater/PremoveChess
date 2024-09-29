@@ -110,9 +110,10 @@ class PremoveChessGame extends ChessGame {
                     moves.push(this.createMove(c, r, c, r + moveDir, isPromotion));
 
                     // Capture left
-                    moves.push(this.createMove(c, r, c - 1, r + moveDir, isPromotion));
+                    if (c > 0) moves.push(this.createMove(c, r, c - 1, r + moveDir, isPromotion));
 
                     // Capture right
+                    if (c < this.cols - 1)
                     moves.push(this.createMove(c, r, c + 1, r + moveDir, isPromotion));
 
                     break;
@@ -122,8 +123,8 @@ class PremoveChessGame extends ChessGame {
 
         // If no king is found, we can't castle
         if (!king) {
-            this.premoves = moves;
-            return moves;
+            this.premoves = this.filterPremoves(moves);
+            return this.premoves;
         }
 
         // Find the rooks on the same rank as the current king
@@ -165,8 +166,8 @@ class PremoveChessGame extends ChessGame {
             // if (castling.q) moves.push(this.createMove(4, 0, 2, 0, false));
         }
 
-        this.premoves = moves;
-        return moves;
+        this.premoves = this.filterPremoves(moves);
+        return this.premoves;
     }
 
     getLegalPremovesAt(col, row) {
@@ -187,5 +188,52 @@ class PremoveChessGame extends ChessGame {
     isLegalPremove(fromCol, fromRow, toCol, toRow) {
         if (ChessBoard.gameOver) return false;
         return this.findPremove(fromCol, fromRow, toCol, toRow) !== null;
+    }
+
+    filterPremoves(premoves) {
+        // Check if the move is legal after any opponent move
+        // First, get each opponent move
+        // Find all the legal moves
+        const firstMove = this.moves.length === 0;
+        this.getLegalMoves();
+        const opponentMoves = [...this.moves];
+        const validPremoves = [];
+
+        if (firstMove) {
+            // Check if any of the premoves are legal
+            for (let i = premoves.length - 1; i >= 0; i--) {
+                const premove = premoves[i];
+                if (this.findMove(premove)) {
+                    validPremoves.push(premove);
+                    premoves.splice(i, 1);
+                }
+            }
+        } else {
+            for (let opponentMove of opponentMoves) {
+                // Play the move
+                this.makeMove(opponentMove);
+                
+                // Find all the legal moves
+                this.getLegalMoves();
+                
+                // Check if any of the premoves are legal
+                for (let i = premoves.length - 1; i >= 0; i--) {
+                    const premove = premoves[i];
+                    if (this.findMove(premove)) {
+                        validPremoves.push(premove);
+                        premoves.splice(i, 1);
+                    }
+                }
+                
+                // Undo the move
+                this.undoMove();
+    
+                // Break if no more premoves
+                if (premoves.length === 0) break;
+            }
+
+        }
+
+        return validPremoves;
     }
 }
