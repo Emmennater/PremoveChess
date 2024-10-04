@@ -144,8 +144,8 @@ class PremoveChessGame extends ChessGame {
         // Castling
         if (whitesTurn) {
             const castling = this.chess.getCastlingRights("w");
-            if (castling.k) moves.push(this.createMove(king.col, king.row, 6, king.row, false, "O-O"));
-            if (castling.q) moves.push(this.createMove(king.col, king.row, 2, king.row, false, "O-O-O"));
+            if (castling.k && king.col !== 6) moves.push(this.createMove(king.col, king.row, 6, king.row, false, "O-O"));
+            if (castling.q && king.col !== 2) moves.push(this.createMove(king.col, king.row, 2, king.row, false, "O-O-O"));
 
             // also add the option to drag the king onto the rook
             if (castling.k) moves.push(this.createMove(king.col, king.row, rightRook.col, rightRook.row, false, "O-O"));
@@ -155,8 +155,8 @@ class PremoveChessGame extends ChessGame {
             // if (castling.q) moves.push(this.createMove(4, this.rows - 1, 2, this.rows - 1, false));
         } else {
             const castling = this.chess.getCastlingRights("b");
-            if (castling.k) moves.push(this.createMove(king.col, king.row, 6, king.row, false, "O-O"));
-            if (castling.q) moves.push(this.createMove(king.col, king.row, 2, king.row, false, "O-O-O"));
+            if (castling.k && king.col !== 6) moves.push(this.createMove(king.col, king.row, 6, king.row, false, "O-O"));
+            if (castling.q && king.col !== 2) moves.push(this.createMove(king.col, king.row, 2, king.row, false, "O-O-O"));
 
             // also add the option to drag the king onto the rook
             if (castling.k) moves.push(this.createMove(king.col, king.row, rightRook.col, rightRook.row, false, "O-O"));

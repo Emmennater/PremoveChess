@@ -120,6 +120,11 @@
                     <input id="solo-show-premoves" type="checkbox">
                 </label>
 
+                <label>
+                    Fischer Random
+                    <input id="solo-fischer-random" type="checkbox">
+                </label>
+
                 <button class="menu-box-button" onclick="MenuEvents.startSoloGame()">Start Game</button>
             </div>
             <div class="menu-button" onclick="MenuEvents.closeCurrentMenu()">Back</div>
@@ -173,6 +178,11 @@
                         <option value="random">Random</option>
                     </select>
                 </hbox>
+
+                <label>
+                    Fischer Random
+                    <input id="host-fischer-random" type="checkbox">
+                </label>
 
                 <button id="host-game-button" class="menu-box-button" onclick="MenuEvents.submitHosting()">Host Game</button>
             </div>

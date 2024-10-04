@@ -80,6 +80,10 @@ input {
     border-radius: 2px;
 }
 
+input:disabled {
+    background-color: #cccccc;
+}
+
 .error-flag {
     background-color: #ff000020;
     border: solid 1px #ff000080;

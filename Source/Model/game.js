@@ -23,6 +23,10 @@ class ChessGame {
         return this.chess.fen();
     }
 
+    validateFen(fen) {
+        return Chess.validateFen(fen);
+    }
+
     getPieceAt(col, row) {
         let coords = this.getCoords(col, row);
         let pieceData = this.chess.get(coords);

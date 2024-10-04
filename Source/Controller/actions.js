@@ -158,7 +158,6 @@ class ChessActions {
 
         const makeMove = promotionPiece => {
             move.promotionPiece = promotionPiece;
-            console.log(move);
             const showPremove = !ChessActions.isSoloGame || ChessActions.showSoloPremoves;
             const success = ChessBoard.makePremove(move, showPremove);
 

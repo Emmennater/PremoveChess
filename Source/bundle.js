@@ -678,10 +678,10 @@ class Chess {
             const passedKing = this._kings[color] != -1;
             if (passedKing) {
                 // must be the right rook
-                ROOKS[color][1] = { square: sq, flags: BITS.KSIDE_CASTLE };
+                ROOKS[color][1] = { square: sq, flag: BITS.KSIDE_CASTLE };
             } else {
                 // must be the left rook
-                ROOKS[color][0] = { square: sq, flags: BITS.QSIDE_CASTLE };
+                ROOKS[color][0] = { square: sq, flag: BITS.QSIDE_CASTLE };
             }
         }
 
@@ -997,11 +997,41 @@ class Chess {
                         }
                     }
 
-                    // check occupancy
-                    const di = Math.sign(castlingTo - castlingFrom) || 1;
-                    const offset = di === -1 ? -1 : 0;
-                    for (let i = castlingFrom + di; i != castlingTo + offset + di; i += di) {
-                        if (this._board[i] && !(this._board[i].type == exports.ROOK && this._board[i].color == us)) {
+                    // check occupancy from start to end square for king and rook
+                    const kingStart = castlingFrom;
+                    const rookStart = ROOKS[us][1].square;
+                    const kingEnd = castlingTo;
+                    const rookEnd = castlingTo - 1;
+                    const d1 = Math.sign(kingEnd - kingStart) || 1;
+                    const d2 = Math.sign(rookEnd - rookStart) || 1;
+
+                    // king
+                    for (let i = kingStart + d1; i !== kingEnd + d1; i += d1) {
+                        const piece = this._board[i];
+                        
+                        // if piece is the rook we are castling with, skip it
+                        if (piece && i === rookStart) {
+                            continue;
+                        }
+
+                        // check occupancy
+                        if (piece) {
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    // rook
+                    for (let i = rookStart + d2; i !== rookEnd + d2; i += d2) {
+                        const piece = this._board[i];
+                        
+                        // if piece is the king we are castling with, skip it
+                        if (piece && i === kingStart) {
+                            continue;
+                        }
+
+                        // check occupancy
+                        if (piece) {
                             flag = false;
                             break;
                         }
@@ -1033,11 +1063,41 @@ class Chess {
                         }
                     }
 
-                    // check occupancy
-                    const di = Math.sign(castlingTo - castlingFrom) || 1;
-                    const offset = di === 1 ? 1 : 0;
-                    for (let i = castlingFrom + di; i != castlingTo + offset + di; i += di) {
-                        if (this._board[i] && !(this._board[i].type == exports.ROOK && this._board[i].color == us)) {
+                    // check occupancy from start to end square for king and rook
+                    const kingStart = castlingFrom;
+                    const rookStart = ROOKS[us][0].square;
+                    const kingEnd = castlingTo;
+                    const rookEnd = castlingTo + 1;
+                    const d1 = Math.sign(kingEnd - kingStart) || 1;
+                    const d2 = Math.sign(rookEnd - rookStart) || 1;
+
+                    // king
+                    for (let i = kingStart + d1; i !== kingEnd + d1; i += d1) {
+                        const piece = this._board[i];
+                        
+                        // if piece is the rook we are castling with, skip it
+                        if (piece && i === rookStart) {
+                            continue;
+                        }
+
+                        // check occupancy
+                        if (piece) {
+                            flag = false;
+                            break;
+                        }
+                    }
+
+                    // rook
+                    for (let i = rookStart + d2; i !== rookEnd + d2; i += d2) {
+                        const piece = this._board[i];
+                        
+                        // if piece is the king we are castling with, skip it
+                        if (piece && i === kingStart) {
+                            continue;
+                        }
+
+                        // check occupancy
+                        if (piece) {
                             flag = false;
                             break;
                         }

@@ -20,7 +20,7 @@ class ChessNetwork {
                 this.myTurn = side === "random" ? Math.random() > 0.5 : side === "white";
                 this.gameFen = fenString;
                 
-                // Send recipient their turn
+                // Send recipient their turn and fen
                 const gameData = "turn " + !this.myTurn + " " + fenString;
                 Network.send(this.recipientID, gameData);
                 

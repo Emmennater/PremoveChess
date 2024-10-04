@@ -93,3 +93,49 @@ function getSearchParameters() {
 
     return parameters;
 }
+
+function shuffleArray(array) {
+    let currentIndex = array.length;
+  
+    // While there remain elements to shuffle...
+    while (currentIndex != 0) {
+  
+      // Pick a remaining element...
+      let randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex--;
+  
+      // And swap it with the current element.
+      [array[currentIndex], array[randomIndex]] = [
+        array[randomIndex], array[currentIndex]];
+    }
+}
+
+function getRandom960Position() {
+    // Generate random piece order
+    const pieces = ["r", "n", "b", "q", "k", "b", "n", "r"];
+    let pieceOrder = "";
+
+    while (true) {
+        shuffleArray(pieces);
+        pieceOrder = pieces.join("");
+
+        // Check if king is between rooks
+        const kingIndex = pieceOrder.indexOf("k");
+        const rookIndex1 = pieceOrder.indexOf("r");
+        const rookIndex2 = pieceOrder.lastIndexOf("r");
+        if (rookIndex1 < kingIndex && kingIndex < rookIndex2) {
+            // Check if bishops are on opposite colors
+            const bishopIndex1 = pieceOrder.indexOf("b");
+            const bishopIndex2 = pieceOrder.lastIndexOf("b");
+            if (bishopIndex1 % 2 !== bishopIndex2 % 2) break;
+        }
+    }
+
+    // Testing
+    // pieceOrder = "rqkrnnbb";
+
+    let fen = pieceOrder + "/pppppppp/8/8/8/8/PPPPPPPP/" + pieceOrder.toUpperCase() + " w KQkq - 0 1";
+
+    return fen;
+}
+

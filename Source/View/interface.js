@@ -37,6 +37,36 @@ class MenuEvents {
             playSound("Assets/button-click.m4a");
         }));
 
+        // Make Fischer Random checkbox disable the fen input for hosting
+        const fischerRandomHost = document.getElementById("host-fischer-random");
+        fischerRandomHost.onchange = () => {
+            const fenInput = document.getElementById("host-fen");
+            fenInput.classList.remove("error-flag");
+            if (fischerRandomHost.checked) {
+                fenInput.disabled = true;
+                fenInput.value = "";
+
+            } else {
+                fenInput.disabled = false;
+                fenInput.value = defaultFen;
+            }
+        }
+
+        // Make Fischer Random checkbox disable the fen input for soloing
+        const fischerRandomSolo = document.getElementById("solo-fischer-random");
+        fischerRandomSolo.onchange = () => {
+            const fenInput = document.getElementById("solo-fen");
+            fenInput.classList.remove("error-flag");
+            if (fischerRandomSolo.checked) {
+                fenInput.disabled = true;
+                fenInput.value = "";
+
+            } else {
+                fenInput.disabled = false;
+                fenInput.value = defaultFen;
+            }
+        }
+
         if (isMobileDevice()) {
             // Add mobile stylesheet
             const link = document.createElement("link");
@@ -155,7 +185,11 @@ class MenuEvents {
 
         // Reset settings
         const fenInput = document.getElementById("solo-fen");
+        const fischerRandom = document.getElementById("solo-fischer-random");
         fenInput.value = defaultFen;
+        fenInput.disabled = false;
+        fischerRandom.checked = false;
+        fenInput.classList.remove("error-flag");
     }
 
     static openJoinMenu() {
@@ -193,10 +227,14 @@ class MenuEvents {
         const hostID = document.getElementById("host-id");
         const hostLink = document.getElementById("host-link");
         const fenInput = document.getElementById("host-fen");
+        const fischerRandom = document.getElementById("host-fischer-random");
         hostID.value = "";
         hostLink.value = "";
         fenInput.value = defaultFen;
+        fenInput.disabled = false;
+        fischerRandom.checked = false;
         hostID.classList.remove("error-flag");
+        fenInput.classList.remove("error-flag");
         MenuEvents.disableButton("host-game-button");
         MenuEvents.disableButton("copy-host-id");
         MenuEvents.disableButton("copy-host-link");
@@ -218,7 +256,18 @@ class MenuEvents {
     // Functions
     static startSoloGame() {
         const fenInput = document.getElementById("solo-fen");
-        const fenString = fenInput.value;
+        let fenString = fenInput.value;
+        const fenValid = ChessBoard.activeGame.validateFen(fenString);
+        const fischerRandom = document.getElementById("solo-fischer-random").checked;
+
+        if (fischerRandom) {
+            fenString = getRandom960Position();
+        } else if (!fenValid.ok) {
+            fenInput.classList.add("error-flag");
+            return false;
+        } else {
+            fenInput.classList.remove("error-flag");
+        }
 
         // Close menus
         this.closeAllMenus();
@@ -235,9 +284,19 @@ class MenuEvents {
     static submitHosting() {
         // Fetch settings
         const fenInput = document.getElementById("host-fen");
-        const sideInput = document.getElementById("host-side");
-        const fenString = fenInput.value;
-        const side = sideInput.value;
+        let fenString = fenInput.value;
+        const side = document.getElementById("host-side").value;
+        const fischerRandom = document.getElementById("host-fischer-random").checked;
+        const fenValid = ChessBoard.activeGame.validateFen(fenString);
+
+        if (fischerRandom) {
+            fenString = getRandom960Position();
+        } else if (!fenValid.ok) {
+            fenInput.classList.add("error-flag");
+            return false;
+        } else {
+            fenInput.classList.remove("error-flag");
+        }
 
         this.gameHasStarted();
 
@@ -246,6 +305,8 @@ class MenuEvents {
 
         // Create session
         ChessNetwork.host(fenString, side);
+
+        return true;
     }
 
     static joinGame() {
