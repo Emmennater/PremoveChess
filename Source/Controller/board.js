@@ -7,7 +7,7 @@ class ChessBoard {
     static whitesMove = true;
     static gameOver = false;
     static whiteWins = false;
-    static premoveNumber = 1;
+    static premoveNumber = 0;
 
     static setActiveGame(game) {
         ChessBoard.activeGame = game;
@@ -28,7 +28,7 @@ class ChessBoard {
         ChessBoard.activeGame.moves = [];
         ChessBoard.activeGame.getLegalPremoves(ChessBoard.whitesMove);
         ChessBoard.updatePieces(ChessBoard.activeGame);
-        ChessBoard.premoveNumber = 1;
+        ChessBoard.setPremoveNumber(0);
         ChessActions.isSoloGame = isSolo;
         ChessActions.opponentsTurn = opponentsTurn ^ (!ChessBoard.whitesMove && !isSolo);
         ChessElements.resetStates();
@@ -233,7 +233,7 @@ class ChessBoard {
             ChessElements.setSquareState(nextPremove.move[2], nextPremove.move[3], "premove", true);
         }
 
-        ChessBoard.premoveNumber++;
+        ChessBoard.setPremoveNumber(ChessBoard.premoveNumber + 1);
 
         return moveIsLegal;
     }
@@ -384,5 +384,13 @@ class ChessBoard {
                 MenuEvents.askForRematch();
             }
         }
+    }
+
+    static setPremoveNumber(number) {
+        ChessBoard.premoveNumber = number;
+
+        // Update GUI
+        const moveNumber = document.getElementById("move-number");
+        moveNumber.innerHTML = "Move " + Math.floor(number / 2 + 1);
     }
 }

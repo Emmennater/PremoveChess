@@ -6,8 +6,10 @@ class ChessNetwork {
     static interruptJoinRequest = null;
     static rematch = { myVote: false, recipientVote: false };
     static isRunning = false;
+    static isFischer = false;
+    static isHost = false;
 
-    static host(fenString, side) {
+    static host(fenString, side, isFischer) {
         // Initialize new game
         ChessBoard.resetBoard(fenString);
 
@@ -15,16 +17,16 @@ class ChessNetwork {
             // Incoming join request
             if (msg.startsWith("join")) {
                 this.recipientID = msg.split(" ")[1];
-
-                // Start game
                 this.myTurn = side === "random" ? Math.random() > 0.5 : side === "white";
                 this.gameFen = fenString;
+                this.isFischer = isFischer;
                 
-                // Send recipient their turn and fen
-                const gameData = "turn " + !this.myTurn + " " + fenString;
+                // Send recipient the game data
+                const gameData = "turn " + !this.myTurn + " " + isFischer + " " + fenString;
                 Network.send(this.recipientID, gameData);
                 
                 // Start game
+                this.isHost = true;
                 this.syncComplete();
             }
         });
@@ -51,17 +53,30 @@ class ChessNetwork {
 
         Network.send(hostID, "join " + Network.id);
         Network.on("message", msg => {
-            const parts = msg.split(" ");
+            // Stop loading icon
             interupted = true;
             loadingIcon.classList.add("hide");
+            this.recipientID = hostID;
+            
+            // Parse message
+            const parts = msg.split(" ");
+
+            // Invalid join
             if (!parts[0] === "turn") return callback(false);
 
-            this.recipientID = hostID;
+            // Set turn
             this.myTurn = parts[1] === "true";
+            
+            // Set fischer
+            this.isFischer = parts[2] === "true";
+
+            // Set game fen
             this.gameFen = "";
-            for (let i = 2; i < parts.length; i++) this.gameFen += parts[i] + " ";
+            for (let i = 3; i < parts.length; i++) this.gameFen += parts[i] + " ";
             this.gameFen = this.gameFen.substring(0, this.gameFen.length - 1);
 
+            // Start game
+            this.isHost = false;
             callback(true);
         });
     }
@@ -148,6 +163,21 @@ class ChessNetwork {
         Network.send(this.recipientID, moveData);
     }
 
+    static getNew960Position(callback) {
+        if (this.isHost) {
+            const newFen = getRandom960Position();
+            Network.send(this.recipientID, "gamefen " + newFen);
+            callback(newFen);
+        } else {
+            Network.on("message", msg => {
+                const parts = msg.split(" ");
+                if (parts[0] === "gamefen") {
+                    callback(msg.substring(8));
+                }
+            })
+        }
+    }
+
     static voteRematch(accepted) {
         this.rematch.myVote = accepted;
         Network.send(this.recipientID, accepted ? "rematch" : "nomatch");
@@ -160,6 +190,15 @@ class ChessNetwork {
 
         // Switch sides
         this.myTurn = !this.myTurn;
-        this.syncComplete();
+
+        // Host generates a new position if fischer random is enabled
+        if (this.isFischer) {
+            this.getNew960Position(fen => {
+                this.gameFen = fen;
+                this.syncComplete();
+            });
+        } else {
+            this.syncComplete();
+        }
     }
 }

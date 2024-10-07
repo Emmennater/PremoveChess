@@ -304,7 +304,7 @@ class MenuEvents {
         this.closeAllMenus();
 
         // Create session
-        ChessNetwork.host(fenString, side);
+        ChessNetwork.host(fenString, side, fischerRandom);
 
         return true;
     }

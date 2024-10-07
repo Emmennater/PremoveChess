@@ -144,13 +144,15 @@ class ChessActions {
         ChessElements.setSquareState(fromCol, fromRow, "premove", true);
         ChessElements.setSquareState(toCol, toRow, "premove", true);
         
+        const location = isMobileDevice() ? "bottom" : "top";
+
         Notification.ask("Confirm move?", confirmed => {
             // Revert premove style changes
             ChessElements.setSquareState(fromCol, fromRow, "premove", false);
             ChessElements.setSquareState(toCol, toRow, "premove", false);
 
             callback(confirmed);
-        });
+        }, location);
     }
 
     static moveMade(fromCol, fromRow, toCol, toRow, animate) {
